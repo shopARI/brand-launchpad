@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Sidebar, MobileMenuButton } from './components/Sidebar';
 import { OnboardingModal } from './components/OnboardingModal';
 import { SettingsModal } from './components/SettingsModal';
-import { getStorage, updateStorage } from './utils/storage';
+import { getStorage } from './utils/storage';
 import {
   Brainstorm,
   Financing,
@@ -26,22 +26,14 @@ const SECTION_COMPONENTS = {
 };
 
 function useAppState() {
+  // Lazy initializers read localStorage once at mount — no effects needed
   const [storage, setStorage] = useState(() => getStorage());
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !getStorage().user.name);
   const [showSettings, setShowSettings] = useState(false);
   const [activeSection, setActiveSection] = useState('brainstorm');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Determine if onboarding is needed on mount
-  useEffect(() => {
-    const data = getStorage();
-    if (!data.user.name) {
-      setShowOnboarding(true);
-    }
-    setStorage(data);
-  }, []);
-
-  const handleOnboardingComplete = useCallback((userData) => {
+  const handleOnboardingComplete = useCallback(() => {
     setShowOnboarding(false);
     setStorage(getStorage());
   }, []);
@@ -52,10 +44,6 @@ function useAppState() {
 
   const handleSectionChange = useCallback((section) => {
     setActiveSection(section);
-  }, []);
-
-  const refreshStorage = useCallback(() => {
-    setStorage(getStorage());
   }, []);
 
   return {
@@ -69,7 +57,6 @@ function useAppState() {
     handleSettingsSave,
     mobileMenuOpen,
     setMobileMenuOpen,
-    refreshStorage,
   };
 }
 

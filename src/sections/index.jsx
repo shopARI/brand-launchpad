@@ -1,7 +1,9 @@
 import { Financing as FinancingComponent } from '../components/Financing';
 import { MarketingPlan } from '../components/MarketingPlan';
 // Placeholder section components for all 8 modules
-// These will be replaced with full implementations in Modules 2-9
+// Module 6 (Pre-Order Setup) is fully implemented via PreOrderSetup component
+
+import PreOrderSetupFull from '../components/PreOrderSetup';
 
 function PlaceholderSection({ emoji, title, description, module }) {
   return (
@@ -66,15 +68,8 @@ export function Marketing({ userData, storage }) {
   return <MarketingPlan userData={userData} storage={storage} />;
 }
 
-export function PreOrder() {
-  return (
-    <PlaceholderSection
-      emoji="🛒"
-      title="Pre-Order Setup"
-      description="Configure your pre-order strategy, platform selection, and launch checklist."
-      module={6}
-    />
-  );
+export function PreOrder({ userData, storage }) {
+  return <PreOrderSetupFull userData={userData} storage={storage} />;
 }
 
 export { ProductionBrief as Production } from '../components/ProductionBrief';
