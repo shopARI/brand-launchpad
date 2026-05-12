@@ -45,10 +45,10 @@ export function WelcomeScreen({ onComplete }) {
             This is Brand Launchpad — your playbook for turning a beverage idea into a real brand.
           </p>
           <p className="text-text-secondary leading-relaxed text-base">
-            I know you're a solo founder. Based in Canada. Probably not sitting on a pile of cash.
-            Maybe you've got a killer idea for a drink, maybe it's still half-formed. Either way —
-            this walks you through everything: validating your concept, finding funding, building a
-            brand, getting pre-orders, and actually making the thing.
+            I know you're a solo founder. Based in Canada. Maybe you've got a killer idea for a
+            drink, maybe it's still half-formed. Either way — this walks you through everything:
+            validating your concept, finding funding, building a brand, getting pre-orders, and
+            actually making the thing.
           </p>
           <p className="text-text-secondary leading-relaxed text-base">
             You might build an empire. You might build a fun side project. You might try it and
