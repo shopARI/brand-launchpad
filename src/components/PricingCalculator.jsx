@@ -170,6 +170,45 @@ const CATEGORIES = [
   { value: 'other', label: 'Other', range: 'Varies by product', color: 'text-text-secondary bg-background border-border' },
 ];
 
+// ─── Per-unit and monthly cost defaults by product type ──────────────────────
+const COST_DEFAULTS = {
+  'canned-cocktail': {
+    perUnit: { ingredients: '1.00', packaging: '0.45', coPacking: '0.75', shippingPerUnit: '0.30', otherUnit: '0.15' },
+    monthly: { marketing: '150', software: '75', storage: '0', insurance: '75', otherFixed: '50' },
+    label: 'canned cocktail',
+  },
+  'hard-seltzer': {
+    perUnit: { ingredients: '0.80', packaging: '0.35', coPacking: '0.60', shippingPerUnit: '0.25', otherUnit: '0.10' },
+    monthly: { marketing: '100', software: '60', storage: '0', insurance: '50', otherFixed: '50' },
+    label: 'hard seltzer',
+  },
+  spirit: {
+    perUnit: { ingredients: '3.00', packaging: '0.90', coPacking: '1.25', shippingPerUnit: '0.50', otherUnit: '0.25' },
+    monthly: { marketing: '200', software: '75', storage: '100', insurance: '100', otherFixed: '75' },
+    label: 'spirit',
+  },
+  wine: {
+    perUnit: { ingredients: '2.00', packaging: '0.80', coPacking: '1.00', shippingPerUnit: '0.45', otherUnit: '0.20' },
+    monthly: { marketing: '150', software: '75', storage: '100', insurance: '75', otherFixed: '50' },
+    label: 'wine / cider',
+  },
+  beer: {
+    perUnit: { ingredients: '0.60', packaging: '0.35', coPacking: '0.50', shippingPerUnit: '0.25', otherUnit: '0.10' },
+    monthly: { marketing: '100', software: '50', storage: '50', insurance: '50', otherFixed: '50' },
+    label: 'beer',
+  },
+  'non-alc': {
+    perUnit: { ingredients: '0.55', packaging: '0.38', coPacking: '0.50', shippingPerUnit: '0.22', otherUnit: '0.10' },
+    monthly: { marketing: '100', software: '50', storage: '50', insurance: '50', otherFixed: '50' },
+    label: 'non-alcoholic beverage',
+  },
+  generic: {
+    perUnit: { ingredients: '0.75', packaging: '0.40', coPacking: '0.65', shippingPerUnit: '0.25', otherUnit: '0.15' },
+    monthly: { marketing: '125', software: '60', storage: '50', insurance: '60', otherFixed: '50' },
+    label: 'beverage',
+  },
+};
+
 const TERM_DEFS = Object.fromEntries(TERMS.map(t => [t.id, t.shortDef]));
 
 const TOOLTIP_MAP = {
@@ -208,6 +247,7 @@ const DEFAULT_INPUTS = {
   wholesaleAutoSet: false,
   retailSplit: 70,
   unitSlider: 500,
+  autoFillLabel: '',
 };
 
 // ─── Tooltip component ─────────────────────────────────────────────────────────
@@ -485,6 +525,30 @@ export function PricingCalculator({ setActiveSection }) {
       merged.productName = brandCtx.brandName;
     }
 
+    // ── Auto-fill cost fields on first visit ──────────────────────────────────
+    // Only runs when no pricing data has been saved yet (first visit or fresh start)
+    const isFirstVisit = !stored.pricing?.inputs;
+    if (isFirstVisit && brandCtx.idea) {
+      const ideaText = (brandCtx.idea + ' ' + brandCtx.feedback).toLowerCase();
+      const detectedType = detectCategory(ideaText) || 'generic';
+      const costDefs = COST_DEFAULTS[detectedType] || COST_DEFAULTS.generic;
+
+      // Prefer AI-personalized per-unit cost data from Financing if available
+      const finPerUnit = brandCtx.costBreakdown?.perUnitCosts;
+
+      merged.ingredients = finPerUnit?.ingredients ?? costDefs.perUnit.ingredients;
+      merged.packaging = finPerUnit?.packaging ?? costDefs.perUnit.packaging;
+      merged.coPacking = finPerUnit?.coPacking ?? costDefs.perUnit.coPacking;
+      merged.shippingPerUnit = finPerUnit?.shipping ?? costDefs.perUnit.shippingPerUnit;
+      merged.otherUnit = costDefs.perUnit.otherUnit;
+      merged.marketing = costDefs.monthly.marketing;
+      merged.software = costDefs.monthly.software;
+      merged.storage = costDefs.monthly.storage;
+      merged.insurance = costDefs.monthly.insurance;
+      merged.otherFixed = costDefs.monthly.otherFixed;
+      merged.autoFillLabel = costDefs.label;
+    }
+
     return merged;
   });
 
@@ -720,6 +784,11 @@ export function PricingCalculator({ setActiveSection }) {
             {/* Per-Unit Costs */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <h3 className="font-semibold text-text-primary mb-1">Per-Unit Costs</h3>
+              {inputs.autoFillLabel && (
+                <p className="text-sm text-text-secondary mb-3 italic">
+                  Pre-filled for a <strong className="not-italic text-text-primary">{inputs.autoFillLabel}</strong> brand. Adjust to match your actual costs.
+                </p>
+              )}
               <p className="text-xs text-text-secondary mb-4">
                 <Tooltip term="COGS" definition={TOOLTIP_MAP['COGS']}>COGS</Tooltip>
                 {' '}= sum of all fields below
