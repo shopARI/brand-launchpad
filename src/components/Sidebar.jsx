@@ -3,11 +3,11 @@ import { Settings, X, Menu } from 'lucide-react';
 const NAV_ITEMS = [
   { key: 'brainstorm',  emoji: '🧠', label: 'Brainstorm' },
   { key: 'financing',   emoji: '💰', label: 'Financing & Grants' },
-  { key: 'pricing',     emoji: '🧮', label: 'Pricing Calculator' },
   { key: 'branding',    emoji: '🎨', label: 'Branding Guide' },
   { key: 'marketing',   emoji: '📣', label: 'Marketing Plan' },
   { key: 'preorder',    emoji: '🛒', label: 'Pre-Order Setup' },
   { key: 'production',  emoji: '🏭', label: 'Production Brief' },
+  { key: 'pricing',     emoji: '🧮', label: 'Pricing Calculator' },
   { key: 'calendar',    emoji: '📅', label: 'Calendar & Checklist' },
 ];
 
