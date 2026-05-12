@@ -98,16 +98,7 @@ export function PreOrder() {
   );
 }
 
-export function Production() {
-  return (
-    <PlaceholderSection
-      emoji="🏭"
-      title="Production Brief"
-      description="Prepare your production specifications, co-packer requirements, and compliance checklist."
-      module={7}
-    />
-  );
-}
+export { ProductionBrief as Production } from '../components/ProductionBrief';
 
 export function Calendar() {
   return (
