@@ -120,32 +120,151 @@ function AIError({ error }) {
 
 // ─── Education Callout Banner ─────────────────────────────────────────────────
 
-function EducationBanner({ checked, onCheck }) {
+function EducationBanner({ checked, onCheck, appMafiaClicked, onAppMafiaClick }) {
   return (
-    <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6 flex items-center gap-4">
-      <span className="text-2xl flex-shrink-0">🎓</span>
-      <div className="flex-1 min-w-0">
-        <a
-          href="https://appmafia.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-accent hover:text-accent-hover font-medium text-sm underline-offset-2 hover:underline transition-colors"
-        >
-          Learn the education-first marketing playbook → App Mafia Course
-        </a>
-      </div>
-      <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
-        <div
-          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
-            checked ? 'bg-success border-success text-card' : 'border-border hover:border-accent'
-          }`}
-          onClick={onCheck}
-        >
-          {checked && <span className="text-xs leading-none">✓</span>}
+    <>
+      {!appMafiaClicked && (
+        <style>{`
+          @keyframes megaPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(196, 118, 43, 0.4); }
+            50% { transform: scale(1.08); box-shadow: 0 0 20px 10px rgba(196, 118, 43, 0.2); }
+          }
+          @keyframes float1 {
+            0%, 100% { transform: translateY(0) rotate(-5deg); opacity: 0.8; }
+            50% { transform: translateY(-10px) rotate(5deg); opacity: 1; }
+          }
+          @keyframes float2 {
+            0%, 100% { transform: translateY(0) rotate(3deg); opacity: 0.7; }
+            50% { transform: translateY(-14px) rotate(-4deg); opacity: 1; }
+          }
+          @keyframes float3 {
+            0%, 100% { transform: translateY(0) rotate(-2deg); opacity: 0.9; }
+            50% { transform: translateY(-8px) rotate(6deg); opacity: 0.7; }
+          }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+          }
+        `}</style>
+      )}
+      <div className="relative mb-6" style={{ padding: appMafiaClicked ? '0' : '44px 24px' }}>
+        {!appMafiaClicked && (
+          <>
+            {/* Floating IMPORTANT words */}
+            <span
+              className="absolute top-0 left-4 font-bold text-accent text-xs pointer-events-none select-none"
+              style={{ animation: 'float1 2s ease-in-out infinite' }}
+            >
+              IMPORTANT
+            </span>
+            <span
+              className="absolute top-0 right-4 font-bold text-sm pointer-events-none select-none"
+              style={{ animation: 'float2 2.3s ease-in-out infinite', color: 'var(--color-accent)', opacity: 0.8 }}
+            >
+              IMPORTANT!
+            </span>
+            <span
+              className="absolute bottom-0 left-2 font-semibold text-accent text-xs pointer-events-none select-none"
+              style={{ animation: 'float3 1.8s ease-in-out infinite' }}
+            >
+              Don&apos;t skip this!
+            </span>
+            <span
+              className="absolute font-bold text-xs pointer-events-none select-none"
+              style={{
+                animation: 'float1 2.5s ease-in-out infinite',
+                color: 'var(--color-accent)',
+                opacity: 0.7,
+                top: '50%',
+                right: '-4px',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              ← Click this
+            </span>
+            <span
+              className="absolute bottom-0 right-2 text-xs italic pointer-events-none select-none"
+              style={{ animation: 'float2 3s ease-in-out infinite', color: 'var(--color-accent)', opacity: 0.6 }}
+            >
+              Seriously, click it
+            </span>
+            {/* Bouncing arrows */}
+            <span
+              className="absolute text-base pointer-events-none select-none"
+              style={{
+                animation: 'bounce 1s ease-in-out infinite',
+                top: '4px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }}
+            >
+              ↓
+            </span>
+            <span
+              className="absolute text-base pointer-events-none select-none"
+              style={{
+                animation: 'bounce 1.2s ease-in-out infinite 0.2s',
+                top: '50%',
+                left: '-4px',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              →
+            </span>
+            <span
+              className="absolute text-base pointer-events-none select-none"
+              style={{
+                animation: 'bounce 1.1s ease-in-out infinite 0.4s',
+                top: '50%',
+                right: '-4px',
+                transform: 'translateY(-50%)',
+              }}
+            >
+              ←
+            </span>
+          </>
+        )}
+
+        {/* The card — pulses until clicked */}
+        <div style={!appMafiaClicked ? { animation: 'megaPulse 1.5s ease-in-out infinite' } : {}}>
+          <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-center gap-4">
+            <span className="text-2xl flex-shrink-0">🎓</span>
+            <div className="flex-1 min-w-0">
+              <a
+                href="https://appmafia.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:text-accent-hover font-medium text-sm underline-offset-2 hover:underline transition-colors"
+                onClick={onAppMafiaClick}
+              >
+                Learn the education-first marketing playbook → App Mafia Course
+              </a>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+              <div
+                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                  checked ? 'bg-success border-success text-card' : 'border-border hover:border-accent'
+                }`}
+                onClick={() => { onCheck(); onAppMafiaClick(); }}
+              >
+                {checked && <span className="text-xs leading-none">✓</span>}
+              </div>
+              <span className="text-xs text-text-secondary">Done</span>
+            </label>
+          </div>
         </div>
-        <span className="text-xs text-text-secondary">Done</span>
-      </label>
-    </div>
+
+        {/* Bouncing finger emoji below card */}
+        {!appMafiaClicked && (
+          <div
+            className="text-center text-xl pointer-events-none select-none mt-1"
+            style={{ animation: 'bounce 0.9s ease-in-out infinite 0.3s' }}
+          >
+            👆
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -594,6 +713,11 @@ export function MarketingPlan({ userData, setActiveSection }) {
   const [batch2, setBatch2] = useState(saved.batch2);
   const [batch3, setBatch3] = useState(saved.batch3);
   const [eduChecked, setEduChecked] = useState(false);
+  const [appMafiaClicked, setAppMafiaClicked] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('brandLaunchpad'))?.marketing?.appMafiaClicked || false;
+    } catch { return false; }
+  });
   const [toast, setToast] = useState(null);
 
   const ai1 = useAI();
@@ -625,6 +749,17 @@ export function MarketingPlan({ userData, setActiveSection }) {
 
   function showToast(msg) {
     setToast(msg);
+  }
+
+  function handleAppMafiaClick() {
+    if (appMafiaClicked) return;
+    setAppMafiaClicked(true);
+    try {
+      const data = JSON.parse(localStorage.getItem('brandLaunchpad') || '{}');
+      if (!data.marketing) data.marketing = {};
+      data.marketing.appMafiaClicked = true;
+      localStorage.setItem('brandLaunchpad', JSON.stringify(data));
+    } catch { /* ignore */ }
   }
 
   // ── Batch 1 ──────────────────────────────────────────────────────────────
@@ -826,7 +961,12 @@ metrics: benchmarks relevant to their category.`;
       {!hasBrainstorm && <BrainstormNudge />}
 
       {/* Education banner */}
-      <EducationBanner checked={eduChecked} onCheck={() => setEduChecked(!eduChecked)} />
+      <EducationBanner
+        checked={eduChecked}
+        onCheck={() => setEduChecked(!eduChecked)}
+        appMafiaClicked={appMafiaClicked}
+        onAppMafiaClick={handleAppMafiaClick}
+      />
 
       {/* Batch 1 */}
       <div className="space-y-6">
