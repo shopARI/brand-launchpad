@@ -59,16 +59,7 @@ export function Pricing() {
   );
 }
 
-export function Branding() {
-  return (
-    <PlaceholderSection
-      emoji="🎨"
-      title="Branding Guide"
-      description="Define your brand identity, tone of voice, color palette, and visual direction."
-      module={4}
-    />
-  );
-}
+export { BrandingGuide as Branding } from '../components/BrandingGuide';
 
 export function Marketing() {
   return (
