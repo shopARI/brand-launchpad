@@ -14,7 +14,6 @@ import {
   Check,
   RefreshCw,
   BookOpen,
-  ClipboardList,
   Star,
 } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
@@ -543,195 +542,6 @@ function Lesson5({ checked, onCheck }) {
   );
 }
 
-// ─── Phase 2: Deliverables Checklist ──────────────────────────────────────────
-
-const STORY_SYSTEM_PROMPT = `You are a branding copywriter for premium beverage brands. Write a compelling brand story (2-3 paragraphs) based on the founder's brand idea, AI market feedback, and tone adjectives. Cover: the origin/why, the vision/what, and the brand's role in the customer's life. Write in the brand's voice. Make it emotional, memorable, and authentic. Canadian market.`;
-
-const TONE_GUIDE_SYSTEM_PROMPT = `You are a brand voice strategist for beverage companies. Create a concise Tone of Voice Guide based on the brand's concept and tone adjectives. Include: 1) Brand Voice Personality, 2) Do's and Don'ts (5 each), 3) Sample phrases, 4) Words to use / Words to avoid. Keep it practical. Canadian market.`;
-
-const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Done'];
-const STATUS_COLORS = {
-  'Not Started': 'bg-background text-text-secondary border-border',
-  'In Progress': 'bg-warning/10 text-warning border-warning/30',
-  Done: 'bg-success/10 text-success border-success/30',
-};
-
-function Phase2({ checklist, onChecklistChange, brandData, storage }) {
-  const { callAI: callStoryAI, response: storyResponse, loading: storyLoading, error: storyError, reset: resetStory } = useAI();
-  const { callAI: callToneAI, response: toneResponse, loading: toneLoading, error: toneError, reset: resetTone } = useAI();
-
-  const items = [
-    { key: 'brandName', label: 'Brand name finalized', hasAI: false },
-    { key: 'tagline', label: 'Tagline / slogan', hasAI: false },
-    { key: 'brandStory', label: 'Brand story written', hasAI: true, aiKey: 'story' },
-    { key: 'toneGuide', label: 'Tone of voice guide', hasAI: true, aiKey: 'tone' },
-    { key: 'colorPalette', label: 'Color palette (hex codes documented)', hasAI: false },
-    { key: 'typography', label: 'Typography selection', hasAI: false },
-    { key: 'logo', label: 'Logo created', hasAI: false },
-    { key: 'socialHandles', label: 'Social media handles reserved', hasAI: false },
-    { key: 'moodBoard', label: 'Brand mood board', hasAI: false },
-    { key: 'mockup', label: 'Product mockup', hasAI: false },
-  ];
-
-  const cycleStatus = (key) => {
-    const current = checklist[key] || 'Not Started';
-    const idx = STATUS_OPTIONS.indexOf(current);
-    const next = STATUS_OPTIONS[(idx + 1) % STATUS_OPTIONS.length];
-    onChecklistChange({ ...checklist, [key]: next });
-  };
-
-  const draftStory = async () => {
-    resetStory();
-    const { idea, feedback } = getBrandContext();
-    const toneWords = brandData.tone.join(', ') || 'modern, authentic';
-    await callStoryAI(
-      STORY_SYSTEM_PROMPT,
-      `Brand idea: ${idea || storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || 'a premium Canadian beverage brand'}\nMarket feedback: ${feedback || ''}\nTone adjectives: ${toneWords}\nBrand name: ${brandData.name || 'TBD'}`
-    );
-  };
-
-  const draftTone = async () => {
-    resetTone();
-    const { idea, feedback } = getBrandContext();
-    const toneWords = brandData.tone.join(', ') || 'modern, authentic';
-    await callToneAI(
-      TONE_GUIDE_SYSTEM_PROMPT,
-      `Brand name: ${brandData.name || 'TBD'}\nBrand concept: ${idea || storage?.brainstorm?.currentIdea || ''}\nMarket positioning: ${feedback || ''}\nTone adjectives: ${toneWords}\nIndustry: Canadian alcohol/beverage`
-    );
-  };
-
-  const done = Object.values(checklist).filter((v) => v === 'Done').length;
-  const pct = Math.round((done / 10) * 100);
-
-  const freeTools = [
-    { label: 'Canva — Logo & Design', url: 'https://www.canva.com' },
-    { label: 'Hatchful by Shopify', url: 'https://www.shopify.com/tools/logo-maker' },
-    { label: 'Smartmockups — Product Mockups', url: 'https://smartmockups.com' },
-    { label: 'coolors.co — Color Palettes', url: 'https://coolors.co' },
-    { label: 'Google Fonts — Typography', url: 'https://fonts.google.com' },
-  ];
-
-  return (
-    <div className="space-y-6">
-      {/* Progress bar */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-text-primary">Brand Checklist</span>
-          <span className="text-sm font-bold text-accent">{done}/10 done ({pct}%)</span>
-        </div>
-        <div className="w-full bg-border rounded-full h-3">
-          <div
-            className="bg-accent rounded-full h-3 transition-all duration-500"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        {pct >= 80 && (
-          <p className="text-xs text-success mt-2 flex items-center gap-1">
-            <CheckCircle2 size={12} />
-            Section complete! 🎉
-          </p>
-        )}
-      </div>
-
-      {/* Checklist items */}
-      <div className="space-y-3">
-        {items.map((item, idx) => {
-          const status = checklist[item.key] || 'Not Started';
-          return (
-            <div key={item.key} className="border border-border rounded-xl p-4 bg-card">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="w-7 h-7 rounded-full bg-background border border-border text-xs font-bold text-text-secondary flex items-center justify-center flex-shrink-0">
-                    {idx + 1}
-                  </span>
-                  <span className="text-sm font-medium text-text-primary">{item.label}</span>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {item.hasAI && (
-                    <button
-                      onClick={item.aiKey === 'story' ? draftStory : draftTone}
-                      disabled={item.aiKey === 'story' ? storyLoading : toneLoading}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 disabled:opacity-50 transition-colors"
-                    >
-                      {(item.aiKey === 'story' ? storyLoading : toneLoading) ? (
-                        <Loader2 size={12} className="animate-spin" />
-                      ) : (
-                        <Sparkles size={12} />
-                      )}
-                      Draft with AI
-                    </button>
-                  )}
-                  <button
-                    onClick={() => cycleStatus(item.key)}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${STATUS_COLORS[status]}`}
-                  >
-                    {status}
-                  </button>
-                </div>
-              </div>
-
-              {item.aiKey === 'story' && (storyResponse || storyError) && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  {storyError ? (
-                    <p className="text-sm text-danger">{storyError}</p>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">AI Draft — Brand Story</p>
-                        <CopyButton text={storyResponse} />
-                      </div>
-                      <div className="prose prose-sm prose-stone max-w-none bg-background rounded-lg p-4 border border-border">
-                        <ReactMarkdown>{storyResponse}</ReactMarkdown>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {item.aiKey === 'tone' && (toneResponse || toneError) && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  {toneError ? (
-                    <p className="text-sm text-danger">{toneError}</p>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide">AI Draft — Tone of Voice Guide</p>
-                        <CopyButton text={toneResponse} />
-                      </div>
-                      <div className="prose prose-sm prose-stone max-w-none bg-background rounded-lg p-4 border border-border max-h-96 overflow-y-auto">
-                        <ReactMarkdown>{toneResponse}</ReactMarkdown>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Free tools */}
-      <div className="border border-border rounded-2xl p-5 bg-card">
-        <p className="text-sm font-semibold text-text-primary mb-3">🛠 Free Tools:</p>
-        <div className="space-y-2">
-          {freeTools.map((tool) => (
-            <a
-              key={tool.label}
-              href={tool.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-background transition-colors text-sm text-text-primary hover:text-accent group"
-            >
-              <span>{tool.label}</span>
-              <ExternalLink size={13} className="text-text-secondary group-hover:text-accent transition-colors" />
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Phase 3: Brand Card + Brief Generator ─────────────────────────────────────
 
 const BRIEF_SYSTEM_PROMPT = `You are a senior brand strategist. Generate a polished 1-page Brand Brief based on the provided brand data. Sections: 1) Brand Overview, 2) Mission Statement, 3) Target Consumer, 4) Brand Personality & Tone of Voice, 5) Visual Identity Summary, 6) Key Differentiators, 7) Competitive Positioning, 8) Tagline Suggestions (3 options). Use the specific brand concept and market feedback to make it concrete — not generic. Canadian alcohol/beverage market.`;
@@ -754,7 +564,7 @@ function Phase3({ brandData, storage }) {
     const brandIdea = idea || storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || 'A premium Canadian beverage brand';
     await callAI(
       BRIEF_SYSTEM_PROMPT,
-      `Brand Name: ${brandData.name || 'TBD'}\nBrand Idea: ${brandIdea}\nMarket Feedback: ${feedback || ''}\nTone Adjectives: ${brandData.tone.join(', ') || 'not specified'}\nColor Palette: ${JSON.stringify(brandData.colors)}\nPhase 2 Progress: ${Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length}/10 items done\nFounder Name: ${storage?.user?.name || 'TBD'}`
+      `Brand Name: ${brandData.name || 'TBD'}\nBrand Idea: ${brandIdea}\nMarket Feedback: ${feedback || ''}\nTone Adjectives: ${brandData.tone.join(', ') || 'not specified'}\nColor Palette: ${JSON.stringify(brandData.colors)}\nFounder Name: ${storage?.user?.name || 'TBD'}`
     );
   };
 
@@ -839,23 +649,6 @@ function Phase3({ brandData, storage }) {
           )}
         </div>
 
-        <div className="mt-6 pt-6 border-t border-border/50">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-text-secondary">Branding completeness</span>
-            <span className="text-xs font-bold text-accent">
-              {Math.round((Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length / 10) * 100)}%
-            </span>
-          </div>
-          <div className="w-full bg-border rounded-full h-2">
-            <div
-              className="rounded-full h-2 transition-all duration-500"
-              style={{
-                width: `${Math.round((Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length / 10) * 100)}%`,
-                backgroundColor: brandData.colors?.primary || '#C4762B',
-              }}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Generate Brief */}
@@ -932,30 +725,22 @@ export function BrandingGuide({ storage, setActiveSection }) {
 
   const allLessonsChecked = [1, 2, 3, 4, 5].every((n) => lessonChecks[n]);
 
-  const phase2Done = Math.round(
-    (Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length / 10) * 100
-  );
-  const isComplete = phase2Done >= 80;
-
   useEffect(() => {
     updateStorage((s) => ({
       ...s,
       sectionProgress: {
         ...s.sectionProgress,
-        branding: isComplete ? 100 : allLessonsChecked ? 50 : phase2Done > 0 ? 30 : 0,
+        branding: allLessonsChecked ? 100 : 0,
       },
     }));
-  }, [isComplete, allLessonsChecked, phase2Done]);
+  }, [allLessonsChecked]);
 
   const saveTone = (tone) => saveBrandData({ tone });
   const saveColors = (colors) => saveBrandData({ colors });
   const saveName = (name) => saveBrandData({ name });
-  const saveChecklist = (checklist) => saveBrandData({ checklist });
-
   const phases = [
     { id: 'learn', label: 'Learn', icon: BookOpen, num: '01' },
-    { id: 'template', label: 'Template', icon: ClipboardList, num: '02' },
-    { id: 'finalize', label: 'Finalize', icon: Star, num: '03' },
+    { id: 'finalize', label: 'Finalize', icon: Star, num: '02' },
   ];
 
   const [activePhase, setActivePhase] = useState('learn');
@@ -1046,35 +831,13 @@ export function BrandingGuide({ storage, setActiveSection }) {
             </p>
             {allLessonsChecked && (
               <button
-                onClick={() => setActivePhase('template')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-colors"
-              >
-                Next: Build Your Brand →
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Phase 2 — Template */}
-      {activePhase === 'template' && (
-        <div>
-          <Phase2
-            checklist={brandData.checklist || {}}
-            onChecklistChange={saveChecklist}
-            brandData={brandData}
-            storage={storage}
-          />
-          {phase2Done >= 80 && (
-            <div className="mt-6 flex justify-end">
-              <button
                 onClick={() => setActivePhase('finalize')}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent-hover transition-colors"
               >
                 Next: See Your Brand Card →
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
