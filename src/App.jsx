@@ -70,18 +70,18 @@ export default function App() {
     return <WelcomeScreen onComplete={handleOnboardingComplete} />;
   }
 
-  // Render the active section, passing onNavigate to Calendar for section-link navigation
+  // Render the active section, passing setActiveSection for Next Section navigation
   function renderActiveSection() {
     switch (activeSection) {
-      case 'brainstorm': return <Brainstorm />;
-      case 'financing':  return <Financing />;
-      case 'pricing':    return <Pricing />;
-      case 'branding':   return <Branding />;
-      case 'marketing':  return <Marketing />;
-      case 'preorder':   return <PreOrder />;
-      case 'production': return <Production />;
-      case 'calendar':   return <Calendar onNavigate={handleSectionChange} />;
-      default:           return <Brainstorm />;
+      case 'brainstorm': return <Brainstorm setActiveSection={handleSectionChange} />;
+      case 'financing':  return <Financing setActiveSection={handleSectionChange} />;
+      case 'pricing':    return <Pricing setActiveSection={handleSectionChange} />;
+      case 'branding':   return <Branding setActiveSection={handleSectionChange} />;
+      case 'marketing':  return <Marketing setActiveSection={handleSectionChange} />;
+      case 'preorder':   return <PreOrder setActiveSection={handleSectionChange} />;
+      case 'production': return <Production setActiveSection={handleSectionChange} />;
+      case 'calendar':   return <Calendar onNavigate={handleSectionChange} setActiveSection={handleSectionChange} />;
+      default:           return <Brainstorm setActiveSection={handleSectionChange} />;
     }
   }
 

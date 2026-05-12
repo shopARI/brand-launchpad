@@ -13,22 +13,22 @@ export { Brainstorm } from '../components/Brainstorm';
 export { BrandingGuide as Branding } from '../components/BrandingGuide';
 export { ProductionBrief as Production } from '../components/ProductionBrief';
 
-export function Financing() {
-  return <FinancingComponent />;
+export function Financing({ setActiveSection }) {
+  return <FinancingComponent setActiveSection={setActiveSection} />;
 }
 
-export function Pricing() {
-  return <PricingCalculator />;
+export function Pricing({ setActiveSection }) {
+  return <PricingCalculator setActiveSection={setActiveSection} />;
 }
 
-export function Marketing({ userData, storage }) {
-  return <MarketingPlan userData={userData} storage={storage} />;
+export function Marketing({ userData, storage, setActiveSection }) {
+  return <MarketingPlan userData={userData} storage={storage} setActiveSection={setActiveSection} />;
 }
 
-export function PreOrder({ userData, storage }) {
-  return <PreOrderSetupFull userData={userData} storage={storage} />;
+export function PreOrder({ userData, storage, setActiveSection }) {
+  return <PreOrderSetupFull userData={userData} storage={storage} setActiveSection={setActiveSection} />;
 }
 
-export function Calendar({ onNavigate }) {
-  return <CalendarChecklist onNavigate={onNavigate} />;
+export function Calendar({ onNavigate, setActiveSection }) {
+  return <CalendarChecklist onNavigate={onNavigate} setActiveSection={setActiveSection} />;
 }

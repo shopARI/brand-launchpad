@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import NextSectionButton from './NextSectionButton';
 import {
   ExternalLink,
   Sparkles,
@@ -843,7 +844,7 @@ function CostBreakdownTab() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
-export function Financing() {
+export function Financing({ setActiveSection }) {
   const [activeTab, setActiveTab] = useState('grants');
   const [customGrants, setCustomGrants] = useState(
     () => getStorage().financing?.customGrants || [],
@@ -943,6 +944,11 @@ export function Financing() {
           {toast}
         </div>
       )}
+    <NextSectionButton
+        nextSection="branding"
+        nextLabel="Branding Guide"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }
