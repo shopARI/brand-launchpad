@@ -1,4 +1,5 @@
 import { Financing as FinancingComponent } from '../components/Financing';
+import { MarketingPlan } from '../components/MarketingPlan';
 // Placeholder section components for all 8 modules
 // These will be replaced with full implementations in Modules 2-9
 
@@ -61,15 +62,8 @@ export function Pricing() {
 
 export { BrandingGuide as Branding } from '../components/BrandingGuide';
 
-export function Marketing() {
-  return (
-    <PlaceholderSection
-      emoji="📣"
-      title="Marketing Plan"
-      description="Build a comprehensive go-to-market strategy with AI-generated content and campaigns."
-      module={5}
-    />
-  );
+export function Marketing({ userData, storage }) {
+  return <MarketingPlan userData={userData} storage={storage} />;
 }
 
 export function PreOrder() {
