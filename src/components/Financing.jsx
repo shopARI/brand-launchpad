@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   ExternalLink,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
   X,
   Loader2,
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
@@ -127,85 +127,6 @@ const SEED_GRANTS = [
   },
 ];
 
-// ─── Bootstrap Path Steps ─────────────────────────────────────────────────────
-
-const BOOTSTRAP_STEPS = [
-  {
-    id: 1,
-    icon: '🔍',
-    title: 'Validate Before You Build',
-    tagline: 'Prove demand before spending a dollar',
-    tools: [
-      'Carrd (free landing page builder)',
-      'Mailchimp (free email list up to 500 subscribers)',
-      'Typeform (free waitlist & survey forms)',
-      'Google Forms (free surveys)',
-    ],
-    strategies: [
-      'Build a one-page website with Carrd in a few hours — describe your product and capture emails',
-      'Run a 2-week social media campaign to drive signups before you have a product',
-      'Set a clear validation target: 100 email signups or 10 pre-orders before spending on production',
-      'Interview 20 potential customers about their pain points — free user research that beats any focus group',
-    ],
-  },
-  {
-    id: 2,
-    icon: '🛠️',
-    title: 'Use Free Tools',
-    tagline: 'Build a professional brand for $0',
-    tools: [
-      'Carrd (website — free tier)',
-      'Mailchimp (email marketing — free up to 500 contacts)',
-      'Canva (design, branding, packaging mockups — free)',
-      'Shopify $1/month Starter plan (basic store)',
-      'Meta Business Suite (social scheduling — free)',
-      'Google Analytics (website analytics — free)',
-    ],
-    strategies: [
-      'Design your entire visual identity on Canva — logo, packaging mockups, social templates, all free',
-      'Use Shopify\'s $1/month plan to sell; upgrade only when you have consistent revenue',
-      'Schedule 30 days of social content in Meta Business Suite in one afternoon — stay consistent for free',
-      'Create a Notion page as your internal brand bible — strategy, voice, suppliers, everything',
-    ],
-  },
-  {
-    id: 3,
-    icon: '💸',
-    title: 'Revenue Before Product',
-    tagline: 'Get paid before you produce',
-    tools: [
-      'Printful (print-on-demand merch — zero upfront cost)',
-      'Stripe (payment processing — free to start)',
-      'Memberful (founding memberships — free plan)',
-      'Eventbrite (tasting events — free for free events)',
-    ],
-    strategies: [
-      'Launch branded merch via Printful — hats, tote bags, shirts with zero inventory or upfront cost',
-      'Sell "Founding Member" packages ($50–$200) for first-batch access + behind-the-scenes perks',
-      'Host paid tasting events at local venues or pop-ups to build community and early revenue',
-      'Use pre-order deposit revenue to fund your first production run — prove demand before committing',
-    ],
-  },
-  {
-    id: 4,
-    icon: '🚀',
-    title: 'When You\'re Ready for Capital',
-    tagline: 'Let your traction do the talking',
-    tools: [
-      'Futurpreneur Canada (up to $60K loan + mentorship)',
-      'BDC Starter loans (flexible terms for early founders)',
-      'Community Futures Development Corporation (regional grants)',
-      'YC SAFE note template (free — for friends & family rounds)',
-    ],
-    strategies: [
-      'Use pre-order numbers and email list size as proof of demand in every grant application',
-      'Apply for Futurpreneur first — $20K–$60K loan with a business mentor, built for founders under 40',
-      'Approach friends and family with a simple SAFE note — YC\'s template is free and keeps it professional',
-      'Contact your local CFDC (Community Futures Development Corporation) for under-the-radar regional grants',
-    ],
-  },
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
@@ -266,10 +187,9 @@ function DeadlineCell({ deadline, label }) {
   const deadlineDate = new Date(deadline);
   const diffDays = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
 
-  // Deadline color coding: past=red, within 30 days=yellow, future=green
-  let colorClass = 'text-success'; // future (> 30 days)
-  if (diffDays < 0) colorClass = 'text-danger'; // past
-  else if (diffDays <= 30) colorClass = 'text-warning'; // within 30 days
+  let colorClass = 'text-success';
+  if (diffDays < 0) colorClass = 'text-danger';
+  else if (diffDays <= 30) colorClass = 'text-warning';
 
   return (
     <span className={`text-sm font-medium ${colorClass}`}>
@@ -280,15 +200,20 @@ function DeadlineCell({ deadline, label }) {
 
 // ─── AI Grant Finder ──────────────────────────────────────────────────────────
 
-const AI_SYSTEM_PROMPT = `You are a Canadian small business funding expert. Search your knowledge for ALL grants, loans, micro-loans, pitch competitions, accelerators, and funding programs available to a 24-year-old solo female founder in Canada with income under $30K starting a beverage/CPG company.
+function buildGrantSystemPrompt(brandIdea) {
+  const brandContext = brandIdea
+    ? `starting a specific brand: ${brandIdea}`
+    : 'starting a beverage/CPG company';
+
+  return `You are a Canadian small business funding expert. Search your knowledge for ALL grants, loans, micro-loans, pitch competitions, accelerators, and funding programs available to a 24-year-old solo female founder in Canada with income under $30K, ${brandContext}.
 
 Return results as a JSON array with fields: name, provider, amount_range, deadline_info, eligibility_summary, application_url (if known, else "Search required"), status ("open"/"check"/"unknown").
 
 Be exhaustive. Include federal, provincial (all provinces), municipal, private foundation, and competition-based funding. Minimum 15 results. Return ONLY the JSON array, no other text.`;
+}
 
 function parseGrantsFromAI(text) {
   try {
-    // Extract JSON array from the AI response text
     const match = text.match(/\[[\s\S]*\]/);
     if (!match) return [];
     const arr = JSON.parse(match[0]);
@@ -315,24 +240,24 @@ function normalizeAIGrant(raw, index) {
   };
 }
 
-function AIGrantModal({ onClose, onGrants, existingNames }) {
+function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
   const { callAI, loading, error } = useAI();
   const [searched, setSearched] = useState(false);
   const [parsed, setParsed] = useState([]);
 
   const handleSearch = useCallback(async () => {
     setSearched(false);
+    const systemPrompt = buildGrantSystemPrompt(brandIdea);
     const text = await callAI(
-      AI_SYSTEM_PROMPT,
+      systemPrompt,
       'Find me all available grants, loans, and funding opportunities for my profile.',
     );
     if (!text) return;
     const grants = parseGrantsFromAI(text).map(normalizeAIGrant);
-    // De-duplicate by name (case-insensitive)
     const deduped = grants.filter((g) => !existingNames.has(g.name.toLowerCase().trim()));
     setParsed(deduped);
     setSearched(true);
-  }, [callAI, existingNames]);
+  }, [callAI, existingNames, brandIdea]);
 
   const handleAdd = useCallback(() => {
     onGrants(parsed);
@@ -355,7 +280,9 @@ function AIGrantModal({ onClose, onGrants, existingNames }) {
             <div>
               <h2 className="font-display text-xl text-text-primary">AI Grant Finder</h2>
               <p className="text-sm text-text-secondary mt-0.5">
-                Discovers grants tailored to your founder profile
+                {brandIdea
+                  ? 'Personalized to your brand concept'
+                  : 'Tailored to your founder profile'}
               </p>
             </div>
           </div>
@@ -375,9 +302,15 @@ function AIGrantModal({ onClose, onGrants, existingNames }) {
               <h3 className="font-display text-lg text-text-primary mb-2">
                 Find More Canadian Grants
               </h3>
+              {brandIdea && (
+                <div className="bg-accent/10 border border-accent/20 rounded-xl px-4 py-3 mb-4 mx-auto max-w-md text-left">
+                  <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-1">Your brand concept</p>
+                  <p className="text-sm text-text-primary line-clamp-3">{brandIdea}</p>
+                </div>
+              )}
               <p className="text-text-secondary mb-6 max-w-md mx-auto text-sm leading-relaxed">
-                Claude will search its knowledge for grants, loans, accelerators, and pitch
-                competitions tailored to a 24-year-old female founder in Canada's beverage / CPG sector.
+                Claude will search for grants, loans, accelerators, and pitch competitions
+                {brandIdea ? ' specific to your brand' : ' tailored to your profile'}.
               </p>
               <button
                 onClick={handleSearch}
@@ -497,12 +430,11 @@ function AIGrantModal({ onClose, onGrants, existingNames }) {
   );
 }
 
-// ─── Grants & Funding Tab ─────────────────────────────────────────────────────
+// ─── Grants Tab ────────────────────────────────────────────────────────────────
 
 function GrantsTab({ grants, onOpenModal }) {
   return (
     <div>
-      {/* Tab Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="font-display text-2xl text-text-primary">Grants & Funding</h2>
@@ -515,18 +447,17 @@ function GrantsTab({ grants, onOpenModal }) {
           className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors shadow-sm whitespace-nowrap self-start sm:self-auto"
         >
           <Sparkles size={16} />
-          Find More Grants With AI
+          Find More With AI
         </button>
       </div>
 
-      {/* Grants Table — horizontal scroll on mobile */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="border-b border-border bg-background/60">
                 <th className="text-left px-4 py-3 font-semibold text-text-secondary whitespace-nowrap text-xs uppercase tracking-wide">
-                  Program Name
+                  Program
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-text-secondary whitespace-nowrap text-xs uppercase tracking-wide">
                   Provider
@@ -538,7 +469,7 @@ function GrantsTab({ grants, onOpenModal }) {
                   Deadline
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-text-secondary whitespace-nowrap text-xs uppercase tracking-wide">
-                  Eligibility Notes
+                  Eligibility
                 </th>
                 <th className="text-left px-4 py-3 font-semibold text-text-secondary whitespace-nowrap text-xs uppercase tracking-wide">
                   Status
@@ -598,7 +529,7 @@ function GrantsTab({ grants, onOpenModal }) {
       <p className="text-xs text-text-secondary mt-3 text-center">
         {grants.length} programs listed ·{' '}
         <span className="inline-flex items-center gap-1">
-          Status key: 🟢 Open · 🟡 Closing Soon · 🔴 Closed · ⚪ Unknown
+          🟢 Open · 🟡 Closing Soon · 🔴 Closed · ⚪ Unknown
         </span>{' '}
         · Always verify eligibility directly with the program provider
       </p>
@@ -606,138 +537,324 @@ function GrantsTab({ grants, onOpenModal }) {
   );
 }
 
-// ─── Bootstrap Path Tab ───────────────────────────────────────────────────────
+// ─── Cost Breakdown Tab ────────────────────────────────────────────────────────
 
-function BootstrapStep({ step, isLast }) {
-  const [expanded, setExpanded] = useState(false);
+function buildCostSystemPrompt(brandIdea, feedback) {
+  const context = [brandIdea, feedback ? `Additional context: ${feedback}` : '']
+    .filter(Boolean)
+    .join('\n');
+
+  return `You are a Canadian beverage industry financial advisor. The user is a 24-year-old solo female founder in Canada with income under $30K, planning to bootstrap with pre-orders before production.
+
+Their brand concept:
+${context}
+
+Generate a detailed cost breakdown for launching this SPECIFIC brand via the bootstrap/pre-order path (validate demand → raise capital → produce). Return ONLY valid JSON in this exact structure:
+
+{
+  "categories": [
+    {
+      "name": "Legal & Registration",
+      "items": [
+        { "item": "Business registration", "low": 60, "mid": 200, "high": 350, "note": "Federal incorporation vs sole proprietorship" }
+      ]
+    }
+  ],
+  "total": { "low": 0, "mid": 0, "high": 0 },
+  "minimum_viable": "You can validate demand for as little as $X with just [specific items]",
+  "timeline_to_revenue": "X–Y months from start to first pre-order revenue"
+}
+
+Required categories (be specific to their product type — a canned cocktail has different costs than a spirit or non-alc):
+1. Legal & Registration (business reg, excise license if alcohol/RTD, provincial requirements for their specific product)
+2. Branding & Design (logo, packaging design — include budget/DIY options)
+3. Digital Presence (domain, hosting, email service, social setup)
+4. Pre-Order Platform (Shopify/Stripe fees, landing page)
+5. Initial Production (co-packer deposit, ingredient sourcing, packaging MOQ — use real Canadian pricing and typical MOQs for their beverage type)
+6. Shipping & Fulfillment (shipping supplies, fulfillment setup)
+7. Marketing & Launch (paid promotion if any, sample costs)
+
+Use real Canadian pricing. Each category must have 2–4 line items. The total must equal the sum of all mid estimates. Return ONLY valid JSON, no other text.`;
+}
+
+function parseCostBreakdown(text) {
+  try {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]);
+  } catch {
+    return null;
+  }
+}
+
+function formatCAD(num) {
+  if (typeof num !== 'number') return '—';
+  return `$${num.toLocaleString('en-CA')}`;
+}
+
+function CostCategoryCard({ category, isExpanded, onToggle }) {
+  const catTotal = category.items.reduce(
+    (acc, item) => ({
+      low: acc.low + (item.low || 0),
+      mid: acc.mid + (item.mid || 0),
+      high: acc.high + (item.high || 0),
+    }),
+    { low: 0, mid: 0, high: 0 },
+  );
 
   return (
-    <div className="flex gap-5">
-      {/* Left column: icon + connecting line */}
-      <div className="flex flex-col items-center flex-shrink-0 w-12">
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center text-xl shadow-md hover:bg-accent-hover transition-all focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 flex-shrink-0 hover:scale-105"
-          aria-expanded={expanded}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${step.title}`}
-        >
-          {step.icon}
-        </button>
-        {!isLast && (
-          <div
-            className="flex-1 mt-1 mb-0"
-            style={{ width: '2px', background: 'linear-gradient(to bottom, #C4762B40, #C4762B10)', minHeight: '40px' }}
-          />
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full text-left px-5 py-4 flex items-center justify-between gap-3 hover:bg-background/50 transition-colors"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="font-medium text-text-primary text-sm">{category.name}</span>
+        </div>
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="hidden sm:flex items-center gap-3 text-xs">
+            <span className="text-text-secondary">{formatCAD(catTotal.low)}</span>
+            <span className="text-text-secondary">–</span>
+            <span className="font-semibold text-accent">{formatCAD(catTotal.mid)}</span>
+            <span className="text-text-secondary">–</span>
+            <span className="text-text-secondary">{formatCAD(catTotal.high)}</span>
+          </div>
+          <span className="text-sm font-semibold text-accent sm:hidden">{formatCAD(catTotal.mid)}</span>
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-text-secondary" />
+          ) : (
+            <ChevronDown size={16} className="text-text-secondary" />
+          )}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="border-t border-border">
+          {/* Column headers */}
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-background/40 text-xs font-semibold text-text-secondary uppercase tracking-wide">
+            <span>Item</span>
+            <span className="w-16 text-right">Low</span>
+            <span className="w-16 text-right">Mid</span>
+            <span className="w-16 text-right">High</span>
+          </div>
+          <div className="divide-y divide-border/50">
+            {category.items.map((item, i) => (
+              <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 items-start">
+                <div>
+                  <span className="text-sm text-text-primary">{item.item}</span>
+                  {item.note && (
+                    <p className="text-xs text-text-secondary mt-0.5">{item.note}</p>
+                  )}
+                </div>
+                <span className="w-16 text-right text-sm text-text-secondary">{formatCAD(item.low)}</span>
+                <span className="w-16 text-right text-sm font-medium text-text-primary">{formatCAD(item.mid)}</span>
+                <span className="w-16 text-right text-sm text-text-secondary">{formatCAD(item.high)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CostBreakdownTab() {
+  const storage = getStorage();
+  const brandIdea = storage.brainstorm?.currentIdea || '';
+  const feedback = storage.brainstorm?.feedback || '';
+  const savedBreakdown = storage.financing?.costBreakdown || null;
+
+  const { callAI, loading, error } = useAI();
+  const [breakdown, setBreakdown] = useState(savedBreakdown);
+  const [parseError, setParseError] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
+
+  const handleGenerate = useCallback(async () => {
+    setParseError(false);
+    const systemPrompt = buildCostSystemPrompt(brandIdea, feedback);
+    const text = await callAI(systemPrompt, 'Generate my personalized cost breakdown for my brand.');
+    if (!text) return;
+    const parsed = parseCostBreakdown(text);
+    if (!parsed) {
+      setParseError(true);
+      return;
+    }
+    setBreakdown(parsed);
+    // Expand all categories by default
+    const expanded = {};
+    (parsed.categories || []).forEach((_, i) => { expanded[i] = true; });
+    setExpandedCategories(expanded);
+    // Save to localStorage for Pricing Calculator
+    updateStorage((s) => ({
+      ...s,
+      financing: { ...s.financing, costBreakdown: parsed },
+      sectionProgress: { ...s.sectionProgress, financing: 100 },
+    }));
+  }, [callAI, brandIdea, feedback]);
+
+  const toggleCategory = useCallback((index) => {
+    setExpandedCategories((prev) => ({ ...prev, [index]: !prev[index] }));
+  }, []);
+
+  // No brand idea nudge
+  if (!brandIdea) {
+    return (
+      <div className="max-w-xl">
+        <h2 className="font-display text-2xl text-text-primary mb-2">Your Cost Breakdown</h2>
+        <div className="bg-background border border-border rounded-2xl p-8 text-center mt-6">
+          <div className="text-4xl mb-3">💡</div>
+          <p className="font-medium text-text-primary mb-1">Complete Brainstorm first</p>
+          <p className="text-sm text-text-secondary">
+            Your cost breakdown is personalized to your specific brand idea. Finish the Brainstorm
+            section so we can generate real numbers for your product.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 className="font-display text-2xl text-text-primary">Your Cost Breakdown</h2>
+          <p className="text-text-secondary mt-1 text-sm">
+            Idea → first revenue via pre-orders, specific to your brand
+          </p>
+        </div>
+        {breakdown && !loading && (
+          <button
+            onClick={handleGenerate}
+            className="inline-flex items-center gap-2 bg-background border border-border text-text-secondary px-3 py-2 rounded-xl text-xs font-medium hover:bg-card hover:text-text-primary transition-colors whitespace-nowrap"
+          >
+            <Sparkles size={13} />
+            Regenerate
+          </button>
         )}
       </div>
 
-      {/* Right column: content */}
-      <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-8'}`}>
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="w-full text-left group focus:outline-none"
-        >
-          <div className="flex items-start justify-between gap-3 pt-2">
+      {/* Brand idea context pill */}
+      <div className="bg-accent/10 border border-accent/20 rounded-xl px-4 py-3 mb-6">
+        <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-1">Based on your brand concept</p>
+        <p className="text-sm text-text-primary line-clamp-2">{brandIdea}</p>
+      </div>
+
+      {/* Generate button (no breakdown yet) */}
+      {!breakdown && !loading && !error && (
+        <div className="text-center py-8 border border-dashed border-border rounded-2xl">
+          <div className="text-5xl mb-4">📊</div>
+          <p className="text-text-secondary text-sm mb-6 max-w-sm mx-auto">
+            AI will generate real cost estimates for your specific product type using Canadian pricing.
+          </p>
+          <button
+            onClick={handleGenerate}
+            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-hover transition-colors"
+          >
+            <Sparkles size={18} />
+            Generate My Cost Breakdown
+          </button>
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <Loader2 size={40} className="animate-spin text-accent" />
+          <p className="text-text-secondary text-sm">Building your personalized breakdown…</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {(error || parseError) && !loading && (
+        <div className="space-y-4">
+          <div className="bg-danger/10 border border-danger/20 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle size={20} className="text-danger flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-display text-xl text-text-primary group-hover:text-accent transition-colors leading-snug">
-                {step.title}
-              </h3>
-              <p className="text-sm text-text-secondary mt-0.5">{step.tagline}</p>
-            </div>
-            <span className="text-text-secondary group-hover:text-accent transition-colors mt-2 flex-shrink-0">
-              {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </span>
-          </div>
-        </button>
-
-        {expanded && (
-          <div className="mt-4 space-y-3">
-            {/* Tools */}
-            <div className="bg-card border border-border rounded-xl p-4">
-              <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
-                🛠️ Free Tools to Use
+              <p className="font-medium text-danger text-sm">
+                {parseError ? 'Could not parse AI response' : 'Error calling AI'}
               </p>
-              <ul className="space-y-2">
-                {step.tools.map((tool, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-text-primary">
-                    <CheckCircle2
-                      size={15}
-                      className="text-success mt-0.5 flex-shrink-0"
-                    />
-                    {tool}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Strategies */}
-            <div className="bg-background border border-border rounded-xl p-4">
-              <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
-                💡 Action Strategies
+              <p className="text-sm text-text-secondary mt-1">
+                {error || 'The AI returned an unexpected format. Try again.'}
               </p>
-              <ul className="space-y-2.5">
-                {step.strategies.map((strategy, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-text-secondary leading-relaxed">
-                    <span className="text-accent font-bold mt-0.5 flex-shrink-0">→</span>
-                    {strategy}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
-        )}
-      </div>
+          <div className="text-center">
+            <button
+              onClick={handleGenerate}
+              className="inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors"
+            >
+              <Sparkles size={16} />
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Breakdown display */}
+      {breakdown && !loading && (
+        <div className="space-y-3">
+          {/* Category cards */}
+          {(breakdown.categories || []).map((category, i) => (
+            <CostCategoryCard
+              key={i}
+              category={category}
+              isExpanded={!!expandedCategories[i]}
+              onToggle={() => toggleCategory(i)}
+            />
+          ))}
+
+          {/* Total row */}
+          {breakdown.total && (
+            <div className="bg-text-primary text-white rounded-xl px-5 py-4 flex items-center justify-between gap-3">
+              <span className="font-semibold text-sm">Total Estimated Range</span>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="opacity-70">{formatCAD(breakdown.total.low)}</span>
+                <span className="opacity-50">–</span>
+                <span className="font-bold text-base">{formatCAD(breakdown.total.mid)}</span>
+                <span className="opacity-50">–</span>
+                <span className="opacity-70">{formatCAD(breakdown.total.high)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Bootstrap Reality Check callout */}
+          {breakdown.minimum_viable && (
+            <div className="bg-success/10 border border-success/20 rounded-xl p-5">
+              <p className="font-semibold text-text-primary text-sm mb-1">✅ Bootstrap Reality Check</p>
+              <p className="text-sm text-text-secondary leading-relaxed">{breakdown.minimum_viable}</p>
+            </div>
+          )}
+
+          {/* Timeline */}
+          {breakdown.timeline_to_revenue && (
+            <p className="text-xs text-text-secondary text-center pt-1">
+              ⏱ {breakdown.timeline_to_revenue}
+            </p>
+          )}
+
+          <p className="text-xs text-text-secondary text-center pt-2">
+            Estimates saved — your Pricing Calculator will use these numbers
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-function BootstrapTab() {
-  return (
-    <div>
-      {/* Tab Header */}
-      <div className="mb-8">
-        <h2 className="font-display text-2xl text-text-primary">How to Launch With $0</h2>
-        <p className="text-text-secondary mt-1 text-sm">
-          A practical roadmap for bootstrapping your beverage brand from idea to revenue
-        </p>
-      </div>
-
-      {/* Roadmap */}
-      <div className="max-w-2xl">
-        {BOOTSTRAP_STEPS.map((step, index) => (
-          <BootstrapStep
-            key={step.id}
-            step={step}
-            isLast={index === BOOTSTRAP_STEPS.length - 1}
-          />
-        ))}
-      </div>
-
-      {/* Closing Callout */}
-      <div className="mt-6 bg-accent/10 border border-accent/20 rounded-2xl p-6 max-w-2xl">
-        <p className="font-display text-lg text-text-primary mb-2">💬 A Founder's Reminder</p>
-        <p className="text-sm text-text-secondary leading-relaxed">
-          Most successful beverage brands started with less than $10K. Revenue validates your idea
-          better than any grant — use grants to <em>accelerate</em>, not to start. Your traction is
-          your best pitch.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 export function Financing() {
   const [activeTab, setActiveTab] = useState('grants');
-  // Lazy initializer reads localStorage once on mount — avoids setState inside effect
   const [customGrants, setCustomGrants] = useState(
     () => getStorage().financing?.customGrants || [],
   );
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Mark section as in-progress when first visited — writes to localStorage (external system only)
+  // Read brand idea once (stable — doesn't change within a session)
+  const brandIdea = getStorage().brainstorm?.currentIdea || '';
+
+  // Mark section as in-progress on first visit
   useEffect(() => {
     updateStorage((s) => {
       const current = s.sectionProgress?.financing || 0;
@@ -758,13 +875,11 @@ export function Financing() {
     (newGrants) => {
       const updated = [...customGrants, ...newGrants];
       setCustomGrants(updated);
-      // Persist to localStorage and mark section complete
       updateStorage((s) => ({
         ...s,
         financing: { ...s.financing, customGrants: updated },
         sectionProgress: { ...s.sectionProgress, financing: 100 },
       }));
-      // Show toast
       const count = newGrants.length;
       setToast(`Added ${count} new grant${count !== 1 ? 's' : ''} to your table!`);
       setTimeout(() => setToast(null), 3500);
@@ -774,16 +889,16 @@ export function Financing() {
 
   const TABS = [
     { id: 'grants', label: '💰 Grants & Funding' },
-    { id: 'bootstrap', label: '🚀 Bootstrap Path' },
+    { id: 'breakdown', label: '📊 Your Cost Breakdown' },
   ];
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-6">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="font-display text-4xl text-text-primary mb-2">Financing & Grants</h1>
-        <p className="text-text-secondary text-lg">
-          Discover funding opportunities and learn how to launch resourcefully
+        <h1 className="font-display text-4xl text-text-primary mb-2">Financing</h1>
+        <p className="text-text-secondary">
+          Find funding and see exactly what it costs to launch your brand
         </p>
       </div>
 
@@ -808,7 +923,7 @@ export function Financing() {
       {activeTab === 'grants' ? (
         <GrantsTab grants={allGrants} onOpenModal={() => setShowModal(true)} />
       ) : (
-        <BootstrapTab />
+        <CostBreakdownTab />
       )}
 
       {/* AI Grant Finder Modal */}
@@ -817,10 +932,11 @@ export function Financing() {
           onClose={() => setShowModal(false)}
           onGrants={handleAddGrants}
           existingNames={existingNames}
+          brandIdea={brandIdea}
         />
       )}
 
-      {/* Toast Notification */}
+      {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 bg-text-primary text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm z-50">
           <CheckCircle2 size={16} className="text-success flex-shrink-0" />
