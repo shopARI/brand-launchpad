@@ -44,6 +44,8 @@ function useAppState() {
 
   const handleSectionChange = useCallback((section) => {
     setActiveSection(section);
+    // Refresh storage when switching sections to pick up any saves
+    setStorage(getStorage());
   }, []);
 
   return {
@@ -96,10 +98,7 @@ export default function App() {
       <main className="flex-1 overflow-y-auto relative">
         {/* Mobile top padding for hamburger button */}
         <div className="md:hidden h-16" />
-        <ActiveSection
-          userData={storage.user}
-          storage={storage}
-        />
+        <ActiveSection />
       </main>
 
       {/* Modals */}
