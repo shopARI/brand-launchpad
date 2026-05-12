@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import NextSectionButton from './NextSectionButton';
 import ReactMarkdown from 'react-markdown';
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
@@ -755,7 +756,7 @@ function initChecklist() {
   return s.preorder?.checklist || {};
 }
 
-export default function PreOrderSetup() {
+export default function PreOrderSetup({ setActiveSection }) {
   const [platform, setPlatform] = useState(initPlatform);
   const [checklist, setChecklist] = useState(initChecklist);
   const [currentStep, setCurrentStep] = useState(1);
@@ -872,6 +873,11 @@ export default function PreOrderSetup() {
           </div>
         </div>
       </div>
+      <NextSectionButton
+        nextSection="production"
+        nextLabel="Production Brief"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }

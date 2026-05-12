@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import NextSectionButton from './NextSectionButton';
 import { ChevronDown, ChevronUp, AlertTriangle, CheckSquare, Square, BadgeCheck, Sparkles, Loader2 } from 'lucide-react';
 import { getStorage, updateStorage } from '../utils/storage';
 import { useAI } from '../hooks/useAI';
@@ -361,7 +362,7 @@ function ChecklistItem({ item, checked, onToggle }) {
 // Main component
 // ---------------------------------------------------------------------------
 
-export function ProductionBrief() {
+export function ProductionBrief({ setActiveSection }) {
   const [checklistState, setChecklistState] = useState(() => {
     const prod = getStorage().production || {};
     return prod.checklist || {};
@@ -556,6 +557,11 @@ export function ProductionBrief() {
           </button>
         )}
       </div>
+      <NextSectionButton
+        nextSection="pricing"
+        nextLabel="Pricing Calculator"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }

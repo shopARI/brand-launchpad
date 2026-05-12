@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import NextSectionButton from './NextSectionButton';
 import ReactMarkdown from 'react-markdown';
 import { ChevronDown, ChevronUp, Copy, Check, Loader2 } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
@@ -74,7 +75,7 @@ const PROSE_COMPACT = [
   '[&_strong]:text-text-primary [&_strong]:font-semibold',
 ].join(' ');
 
-export function Brainstorm() {
+export function Brainstorm({ setActiveSection }) {
   // Initialize state from localStorage (pre-populate from onboarding if no saved brainstorm)
   const [idea, setIdea] = useState(() => {
     const data = getStorage();
@@ -366,6 +367,11 @@ export function Brainstorm() {
           )}
         </div>
       )}
+    <NextSectionButton
+        nextSection="financing"
+        nextLabel="Financing & Grants"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }

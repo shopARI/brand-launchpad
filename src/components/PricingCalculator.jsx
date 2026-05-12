@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import NextSectionButton from './NextSectionButton';
 import { Save } from 'lucide-react';
 import { updateStorage, getStorage } from '../utils/storage';
 
@@ -458,7 +459,7 @@ function TotalLaunchCostsCard({ brandCtx }) {
 }
 
 // ─── Main component ────────────────────────────────────────────────────────────
-export function PricingCalculator() {
+export function PricingCalculator({ setActiveSection }) {
   const [activeCard, setActiveCard] = useState(null);
   const [saved, setSaved] = useState(false);
 
@@ -1010,6 +1011,11 @@ export function PricingCalculator() {
           </button>
         </div>
       </section>
+      <NextSectionButton
+        nextSection="calendar"
+        nextLabel="Calendar & Checklist"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }

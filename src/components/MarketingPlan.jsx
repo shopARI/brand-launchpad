@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import NextSectionButton from './NextSectionButton';
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
 
@@ -585,7 +586,7 @@ function BatchSection({ number, title, emoji, locked, saved, children }) {
 
 // ─── Main MarketingPlan Component ─────────────────────────────────────────────
 
-export function MarketingPlan({ userData }) {
+export function MarketingPlan({ userData, setActiveSection }) {
   const storage = getStorage();
   const saved = storage.marketing || { batch1: null, batch2: null, batch3: null };
 
@@ -1000,6 +1001,11 @@ metrics: benchmarks relevant to their category.`;
 
       {/* Toast */}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      <NextSectionButton
+        nextSection="preorder"
+        nextLabel="Pre-Order Setup"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }

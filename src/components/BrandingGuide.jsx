@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import NextSectionButton from './NextSectionButton';
 import ReactMarkdown from 'react-markdown';
 import {
   ChevronDown,
@@ -906,7 +907,7 @@ function Phase3({ brandData, storage }) {
 
 // ─── Main BrandingGuide Component ────────────────────────────────────────────
 
-export function BrandingGuide({ storage }) {
+export function BrandingGuide({ storage, setActiveSection }) {
   const [brandData, saveBrandData] = useBrandingStorage();
   const [lessonChecks, setLessonChecks] = useState(() => {
     const raw = localStorage.getItem('brandLaunchpad_lessonChecks');
@@ -1081,6 +1082,11 @@ export function BrandingGuide({ storage }) {
       {activePhase === 'finalize' && (
         <Phase3 brandData={brandData} storage={storage} />
       )}
+      <NextSectionButton
+        nextSection="marketing"
+        nextLabel="Marketing Plan"
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }
