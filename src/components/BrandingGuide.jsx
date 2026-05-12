@@ -19,6 +19,28 @@ import {
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
 
+// ─── Brand context helper ────────────────────────────────────────────────────
+
+function getBrandContext() {
+  try {
+    const data = JSON.parse(localStorage.getItem('brandLaunchpad') || '{}');
+    return {
+      idea: data?.brainstorm?.currentIdea || '',
+      feedback: data?.brainstorm?.feedback || '',
+      hasBrainstorm: !!(data?.brainstorm?.currentIdea),
+      brandName: data?.branding?.name || '',
+    };
+  } catch {
+    return { idea: '', feedback: '', hasBrainstorm: false, brandName: '' };
+  }
+}
+
+const BrainstormNudge = () => (
+  <div className="mb-6 px-4 py-3 rounded-xl border border-dashed border-amber-300/60 bg-amber-50/30 text-sm text-text-secondary">
+    Complete <strong>Brainstorm</strong> first to personalize this section to your brand.
+  </div>
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function useBrandingStorage() {
@@ -98,11 +120,7 @@ function Lesson1({ checked, onCheck }) {
   return (
     <div className="space-y-5 mt-4">
       <p className="text-text-secondary leading-relaxed">
-        A brand book (also called a brand style guide or brand bible) is a document that defines
-        how your brand looks, sounds, and feels — consistently — across every touchpoint. It
-        codifies your visual identity, tone of voice, messaging principles, and usage rules so
-        that anyone working on your brand produces cohesive, on-brand output. Think of it as the
-        constitution for your brand: it answers "does this feel like us?" before you publish anything.
+        A brand book defines how your brand looks, sounds, and feels — consistently — across every touchpoint. Think of it as the constitution for your brand.
       </p>
       <div>
         <p className="text-sm font-semibold text-text-primary mb-3">📺 Recommended watching:</p>
@@ -159,9 +177,7 @@ function Lesson2({ tone, onSave, checked, onCheck }) {
   return (
     <div className="space-y-5 mt-4">
       <p className="text-text-secondary leading-relaxed">
-        Your tone of voice is how your brand speaks — its personality in words. It's not what you
-        say but how you say it. A consistent tone builds trust and makes your brand instantly
-        recognizable. Here's how three standout beverage brands nail it:
+        Tone of voice is how your brand speaks — its personality in words. Three standout brands show how powerful a consistent tone can be:
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {examples.map((e) => (
@@ -173,7 +189,7 @@ function Lesson2({ tone, onSave, checked, onCheck }) {
       </div>
       <div>
         <p className="text-sm font-semibold text-text-primary mb-3">
-          Your turn — 3 adjectives that describe how your brand should FEEL:
+          3 adjectives that describe how your brand should FEEL:
         </p>
         <div className="grid grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
@@ -242,14 +258,11 @@ function Lesson3({ colors, onSave, checked, onCheck }) {
   return (
     <div className="space-y-5 mt-4">
       <p className="text-text-secondary leading-relaxed">
-        Visual identity is the face of your brand: logo, color palette, typography, and photography
-        style working together to create instant recognition. Your color palette alone can convey
-        premium vs accessible, bold vs subtle, traditional vs modern — before a customer reads a
-        single word. Choose intentionally.
+        Your color palette conveys premium vs accessible, bold vs subtle, before a customer reads a single word. Choose intentionally.
       </p>
       <div>
         <p className="text-sm font-semibold text-text-primary mb-3">
-          🎨 Your Mood Board — define your 6 brand colors:
+          🎨 Define your 6 brand colors:
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {colorSlots.map((slot) => (
@@ -293,7 +306,7 @@ function Lesson3({ colors, onSave, checked, onCheck }) {
 
 // ─── Lesson 4: Naming Your Brand ──────────────────────────────────────────────
 
-const NAMING_SYSTEM_PROMPT = `You are a branding expert specializing in alcohol/beverage brands. Generate 10 brand name ideas based on the user's description. For each name, provide: the name, a one-line rationale, and a note on trademark availability risk (low/medium/high based on how common the words are). Format as a numbered list. Be creative — mix approaches (abstract, compound words, foreign words, portmanteaus, etc). These are for a Canadian market.`;
+const NAMING_SYSTEM_PROMPT = `You are a branding expert specializing in alcohol/beverage brands. Generate 10 brand name ideas based on the user's concept and brand context. For each name provide: the name, a one-line rationale tied to their specific concept, and a trademark availability risk note (low/medium/high). Format as a numbered list. Be creative — mix approaches (abstract, compound words, foreign words, portmanteaus). These are for a Canadian market.`;
 
 function Lesson4({ brandName, onSave, checked, onCheck }) {
   const [vibe, setVibe] = useState('');
@@ -303,7 +316,11 @@ function Lesson4({ brandName, onSave, checked, onCheck }) {
   const handleGenerate = async () => {
     if (!vibe.trim()) return;
     reset();
-    await callAI(NAMING_SYSTEM_PROMPT, vibe);
+    const { idea, feedback } = getBrandContext();
+    const context = idea
+      ? `Their brand concept: ${idea}\nPrevious AI feedback: ${feedback}\nAdditional vibe: ${vibe}`
+      : vibe;
+    await callAI(NAMING_SYSTEM_PROMPT, context);
   };
 
   const frameworks = [
@@ -316,9 +333,7 @@ function Lesson4({ brandName, onSave, checked, onCheck }) {
   return (
     <div className="space-y-5 mt-4">
       <p className="text-text-secondary leading-relaxed">
-        Your brand name is often the first thing a customer encounters — it needs to be memorable,
-        distinctive, and legally available. The best beverage names are short (1-2 words), easy to
-        pronounce, and evoke the right feeling at a glance.
+        The best beverage names are short (1-2 words), easy to pronounce, and evoke the right feeling at a glance.
       </p>
       <div>
         <p className="text-sm font-semibold text-text-primary mb-3">📚 Naming Frameworks:</p>
@@ -337,15 +352,15 @@ function Lesson4({ brandName, onSave, checked, onCheck }) {
           <p className="text-sm font-semibold text-text-primary">AI Name Generator</p>
         </div>
         <textarea
-          placeholder="Describe your brand vibe in a sentence (e.g. 'a premium canned cocktail for outdoor adventurers who want sophistication without pretension')"
+          placeholder="Add any extra vibe details (your brand concept from Brainstorm is already included)"
           value={vibe}
           onChange={(e) => setVibe(e.target.value)}
-          rows={3}
+          rows={2}
           className="w-full border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-secondary/50 bg-white focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/20 transition-all resize-none mb-3"
         />
         <button
           onClick={handleGenerate}
-          disabled={loading || !vibe.trim()}
+          disabled={loading}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
@@ -430,6 +445,12 @@ function Lesson5({ checked, onCheck }) {
     steal: '',
   });
 
+  // Pre-fill competitors from brainstorm feedback if available
+  const { feedback } = getBrandContext();
+  const competitorHint = feedback
+    ? feedback.match(/competitor[s]?[:\s]+([^\n.]+)/i)?.[1] || ''
+    : '';
+
   const save = () => {
     if (!form.brandName.trim()) return;
     const next = [...entries, { ...form, id: Date.now() }];
@@ -445,20 +466,18 @@ function Lesson5({ checked, onCheck }) {
   };
 
   const fields = [
-    { key: 'brandName', label: 'Competitor Brand Name', placeholder: 'e.g. Montauk Brewing' },
+    { key: 'brandName', label: 'Competitor Brand', placeholder: competitorHint || 'e.g. Montauk Brewing' },
     { key: 'vibeWords', label: 'Vibe Words (3)', placeholder: 'e.g. coastal, relaxed, nostalgic' },
     { key: 'colors', label: 'Brand Colors', placeholder: 'e.g. navy, white, sandy yellow' },
-    { key: 'socialStyle', label: 'Social Media Style', placeholder: 'e.g. lifestyle photography, UGC-heavy, meme-driven' },
-    { key: 'pricePoint', label: 'Price Point', placeholder: 'e.g. $4.99/can, premium ~$18/6-pack' },
-    { key: 'steal', label: 'What to Steal 💡', placeholder: 'e.g. their storytelling approach, the outdoors positioning' },
+    { key: 'socialStyle', label: 'Social Media Style', placeholder: 'e.g. lifestyle photography, UGC-heavy' },
+    { key: 'pricePoint', label: 'Price Point', placeholder: 'e.g. $4.99/can, ~$18/6-pack' },
+    { key: 'steal', label: 'What to Steal 💡', placeholder: 'e.g. their storytelling approach' },
   ];
 
   return (
     <div className="space-y-5 mt-4">
       <p className="text-text-secondary leading-relaxed">
-        Understanding your competition is essential before defining your own brand. By studying what
-        competitors do well (and poorly), you can deliberately position yourself differently and
-        spot white space in the market. Fill in this teardown template for 2-3 competing brands.
+        Study 2-3 competitors to spot white space and deliberately position yourself differently.
       </p>
       <div className="bg-background border border-border rounded-2xl p-5">
         <p className="text-sm font-semibold text-text-primary mb-4">Add a Competitor:</p>
@@ -525,9 +544,9 @@ function Lesson5({ checked, onCheck }) {
 
 // ─── Phase 2: Deliverables Checklist ──────────────────────────────────────────
 
-const STORY_SYSTEM_PROMPT = `You are a branding copywriter for premium beverage brands. Write a compelling brand story (2-3 paragraphs) based on the founder's brand idea and tone adjectives. The story should cover: the origin/why, the vision/what, and the brand's role in the customer's life. Write in the brand's voice as defined by the tone adjectives. Make it emotional, memorable, and authentic — not corporate. This is for a Canadian market.`;
+const STORY_SYSTEM_PROMPT = `You are a branding copywriter for premium beverage brands. Write a compelling brand story (2-3 paragraphs) based on the founder's brand idea, AI market feedback, and tone adjectives. Cover: the origin/why, the vision/what, and the brand's role in the customer's life. Write in the brand's voice. Make it emotional, memorable, and authentic. Canadian market.`;
 
-const TONE_GUIDE_SYSTEM_PROMPT = `You are a brand voice strategist for beverage companies. Create a concise Tone of Voice Guide based on the brand's tone adjectives. Include: 1) Brand Voice Personality (expand on each adjective with examples), 2) Do's and Don'ts (5 each), 3) Sample phrases and messaging examples, 4) Words to use / Words to avoid. Format clearly with headers. Keep it practical and actionable for a small team. This is for a Canadian market.`;
+const TONE_GUIDE_SYSTEM_PROMPT = `You are a brand voice strategist for beverage companies. Create a concise Tone of Voice Guide based on the brand's concept and tone adjectives. Include: 1) Brand Voice Personality, 2) Do's and Don'ts (5 each), 3) Sample phrases, 4) Words to use / Words to avoid. Keep it practical. Canadian market.`;
 
 const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Done'];
 const STATUS_COLORS = {
@@ -562,20 +581,21 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
 
   const draftStory = async () => {
     resetStory();
-    const idea = storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || '';
+    const { idea, feedback } = getBrandContext();
     const toneWords = brandData.tone.join(', ') || 'modern, authentic';
     await callStoryAI(
       STORY_SYSTEM_PROMPT,
-      `Brand idea: ${idea}\nTone adjectives: ${toneWords}\nBrand name: ${brandData.name || 'TBD'}`
+      `Brand idea: ${idea || storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || 'a premium Canadian beverage brand'}\nMarket feedback: ${feedback || ''}\nTone adjectives: ${toneWords}\nBrand name: ${brandData.name || 'TBD'}`
     );
   };
 
   const draftTone = async () => {
     resetTone();
+    const { idea, feedback } = getBrandContext();
     const toneWords = brandData.tone.join(', ') || 'modern, authentic';
     await callToneAI(
       TONE_GUIDE_SYSTEM_PROMPT,
-      `Brand name: ${brandData.name || 'TBD'}\nTone adjectives: ${toneWords}\nIndustry: Canadian alcohol/beverage brand`
+      `Brand name: ${brandData.name || 'TBD'}\nBrand concept: ${idea || storage?.brainstorm?.currentIdea || ''}\nMarket positioning: ${feedback || ''}\nTone adjectives: ${toneWords}\nIndustry: Canadian alcohol/beverage`
     );
   };
 
@@ -595,7 +615,7 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
       {/* Progress bar */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-text-primary">Deliverables Progress</span>
+          <span className="text-sm font-semibold text-text-primary">Brand Checklist</span>
           <span className="text-sm font-bold text-accent">{done}/10 done ({pct}%)</span>
         </div>
         <div className="w-full bg-border rounded-full h-3">
@@ -649,7 +669,6 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
                 </div>
               </div>
 
-              {/* AI output for brand story */}
               {item.aiKey === 'story' && (storyResponse || storyError) && (
                 <div className="mt-3 pt-3 border-t border-border">
                   {storyError ? (
@@ -668,7 +687,6 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
                 </div>
               )}
 
-              {/* AI output for tone guide */}
               {item.aiKey === 'tone' && (toneResponse || toneError) && (
                 <div className="mt-3 pt-3 border-t border-border">
                   {toneError ? (
@@ -693,7 +711,7 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
 
       {/* Free tools */}
       <div className="border border-border rounded-2xl p-5 bg-card">
-        <p className="text-sm font-semibold text-text-primary mb-3">🛠 Free Tools to Complete Your Brand:</p>
+        <p className="text-sm font-semibold text-text-primary mb-3">🛠 Free Tools:</p>
         <div className="space-y-2">
           {freeTools.map((tool) => (
             <a
@@ -715,7 +733,7 @@ function Phase2({ checklist, onChecklistChange, brandData, storage }) {
 
 // ─── Phase 3: Brand Card + Brief Generator ─────────────────────────────────────
 
-const BRIEF_SYSTEM_PROMPT = `You are a senior brand strategist. Generate a complete, professional 1-page Brand Brief based on the provided brand data. Structure it with these sections: 1) Brand Overview, 2) Mission Statement, 3) Target Consumer, 4) Brand Personality & Tone of Voice, 5) Visual Identity Summary, 6) Key Differentiators, 7) Competitive Positioning, 8) Tagline Suggestions (3 options). Make it polished, strategic, and ready to share with a design agency or investor. This is for a Canadian alcohol/beverage market.`;
+const BRIEF_SYSTEM_PROMPT = `You are a senior brand strategist. Generate a polished 1-page Brand Brief based on the provided brand data. Sections: 1) Brand Overview, 2) Mission Statement, 3) Target Consumer, 4) Brand Personality & Tone of Voice, 5) Visual Identity Summary, 6) Key Differentiators, 7) Competitive Positioning, 8) Tagline Suggestions (3 options). Use the specific brand concept and market feedback to make it concrete — not generic. Canadian alcohol/beverage market.`;
 
 function Phase3({ brandData, storage }) {
   const { callAI, response, loading, error, reset } = useAI();
@@ -731,15 +749,11 @@ function Phase3({ brandData, storage }) {
 
   const handleGenerate = async () => {
     reset();
-    const idea = storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || 'A premium Canadian beverage brand';
+    const { idea, feedback } = getBrandContext();
+    const brandIdea = idea || storage?.brainstorm?.currentIdea || storage?.user?.brandIdea || 'A premium Canadian beverage brand';
     await callAI(
       BRIEF_SYSTEM_PROMPT,
-      `Brand Name: ${brandData.name || 'TBD'}
-Brand Idea: ${idea}
-Tone Adjectives: ${brandData.tone.join(', ') || 'not specified'}
-Color Palette: ${JSON.stringify(brandData.colors)}
-Phase 2 Checklist Progress: ${Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length}/10 items done
-Founder Name: ${storage?.user?.name || 'TBD'}`
+      `Brand Name: ${brandData.name || 'TBD'}\nBrand Idea: ${brandIdea}\nMarket Feedback: ${feedback || ''}\nTone Adjectives: ${brandData.tone.join(', ') || 'not specified'}\nColor Palette: ${JSON.stringify(brandData.colors)}\nPhase 2 Progress: ${Object.values(brandData.checklist || {}).filter((v) => v === 'Done').length}/10 items done\nFounder Name: ${storage?.user?.name || 'TBD'}`
     );
   };
 
@@ -773,7 +787,6 @@ Founder Name: ${storage?.user?.name || 'TBD'}`
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Tone */}
           <div>
             <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Tone of Voice</p>
             {brandData.tone.length > 0 ? (
@@ -793,7 +806,6 @@ Founder Name: ${storage?.user?.name || 'TBD'}`
             )}
           </div>
 
-          {/* Colors */}
           <div>
             <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Color Palette</p>
             {hasColors ? (
@@ -816,7 +828,6 @@ Founder Name: ${storage?.user?.name || 'TBD'}`
             )}
           </div>
 
-          {/* Brand idea */}
           {(storage?.brainstorm?.currentIdea || storage?.user?.brandIdea) && (
             <div className="sm:col-span-2">
               <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Brand Concept</p>
@@ -827,7 +838,6 @@ Founder Name: ${storage?.user?.name || 'TBD'}`
           )}
         </div>
 
-        {/* Progress bar */}
         <div className="mt-6 pt-6 border-t border-border/50">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-text-secondary">Branding completeness</span>
@@ -854,8 +864,7 @@ Founder Name: ${storage?.user?.name || 'TBD'}`
           <h3 className="font-semibold text-text-primary">Generate Full Brand Brief</h3>
         </div>
         <p className="text-sm text-text-secondary mb-4">
-          Generate a polished, investor-ready 1-page brand brief based on all your saved data.
-          Uses your brand name, tone adjectives, color palette, and brand concept.
+          Investor-ready 1-page brief using your brand name, tone, colors, and concept.
         </p>
         <button
           onClick={handleGenerate}
@@ -908,6 +917,8 @@ export function BrandingGuide({ storage }) {
     }
   });
 
+  const { hasBrainstorm } = getBrandContext();
+
   const saveChecks = (next) => {
     setLessonChecks(next);
     localStorage.setItem('brandLaunchpad_lessonChecks', JSON.stringify(next));
@@ -925,7 +936,6 @@ export function BrandingGuide({ storage }) {
   );
   const isComplete = phase2Done >= 80;
 
-  // Update sectionProgress when complete
   useEffect(() => {
     updateStorage((s) => ({
       ...s,
@@ -955,10 +965,12 @@ export function BrandingGuide({ storage }) {
       <div className="text-center mb-10">
         <div className="text-5xl mb-4" role="img" aria-label="Branding Guide">🎨</div>
         <h1 className="font-display text-4xl text-text-primary mb-3">Branding Guide</h1>
-        <p className="text-text-secondary text-lg max-w-lg mx-auto">
-          Build a cohesive, memorable brand identity from scratch — tone, colors, name, and story.
+        <p className="text-text-secondary max-w-lg mx-auto">
+          Build a cohesive brand identity — tone, colors, name, and story.
         </p>
       </div>
+
+      {!hasBrainstorm && <BrainstormNudge />}
 
       {/* Phase tabs */}
       <div className="flex gap-1 bg-background border border-border rounded-2xl p-1.5 mb-8">
@@ -1002,7 +1014,7 @@ export function BrandingGuide({ storage }) {
             />
           </LessonCard>
 
-          <LessonCard number={3} title="Visual Identity Basics">
+          <LessonCard number={3} title="Visual Identity">
             <Lesson3
               colors={brandData.colors || {}}
               onSave={saveColors}
@@ -1020,14 +1032,13 @@ export function BrandingGuide({ storage }) {
             />
           </LessonCard>
 
-          <LessonCard number={5} title="Competitor Brand Teardown">
+          <LessonCard number={5} title="Competitor Teardown">
             <Lesson5
               checked={!!lessonChecks[5]}
               onCheck={() => toggleCheck(5)}
             />
           </LessonCard>
 
-          {/* Progress summary */}
           <div className="flex items-center justify-between pt-4">
             <p className="text-sm text-text-secondary">
               {[1, 2, 3, 4, 5].filter((n) => lessonChecks[n]).length}/5 lessons completed

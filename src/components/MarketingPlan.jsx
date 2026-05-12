@@ -2,6 +2,28 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
 
+// ─── Brand context helper ────────────────────────────────────────────────────
+
+function getBrandContext() {
+  try {
+    const data = JSON.parse(localStorage.getItem('brandLaunchpad') || '{}');
+    return {
+      idea: data?.brainstorm?.currentIdea || '',
+      feedback: data?.brainstorm?.feedback || '',
+      hasBrainstorm: !!(data?.brainstorm?.currentIdea),
+      brandName: data?.branding?.name || '',
+    };
+  } catch {
+    return { idea: '', feedback: '', hasBrainstorm: false, brandName: '' };
+  }
+}
+
+const BrainstormNudge = () => (
+  <div className="mb-6 px-4 py-3 rounded-xl border border-dashed border-amber-300/60 bg-amber-50/30 text-sm text-text-secondary">
+    Complete <strong>Brainstorm</strong> first to personalize this section to your brand.
+  </div>
+);
+
 // ─── Icons / helpers ────────────────────────────────────────────────────────
 
 function PlatformIcon({ platform }) {
@@ -99,44 +121,29 @@ function AIError({ error }) {
 
 function EducationBanner({ checked, onCheck }) {
   return (
-    <div className="bg-accent/5 border border-accent/20 rounded-2xl p-6 mb-8">
-      <div className="flex items-start gap-4">
-        <div className="text-3xl mt-0.5">🎓</div>
-        <div className="flex-1">
-          <h2 className="font-display text-xl text-text-primary mb-2">
-            Before you plan, learn the playbook.
-          </h2>
-          <p className="text-text-secondary mb-1">
-            We recommend completing the App Mafia course on launch marketing.
-          </p>
-          <p className="text-text-secondary mb-4 italic font-medium">
-            "Start by educating your audience, not selling to them."
-          </p>
-          <a
-            href="https://appmafia.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-accent hover:text-accent-hover font-medium text-sm underline-offset-2 hover:underline mb-5 transition-colors"
-          >
-            Take the App Mafia Course →
-          </a>
-          <label className="flex items-center gap-3 cursor-pointer group mt-2">
-            <div
-              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                checked
-                  ? 'bg-success border-success text-card'
-                  : 'border-border group-hover:border-accent'
-              }`}
-              onClick={onCheck}
-            >
-              {checked && <span className="text-xs leading-none">✓</span>}
-            </div>
-            <span className="text-sm text-text-secondary group-hover:text-text-primary transition-colors">
-              I've reviewed the education-first marketing approach ✓
-            </span>
-          </label>
-        </div>
+    <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-6 flex items-center gap-4">
+      <span className="text-2xl flex-shrink-0">🎓</span>
+      <div className="flex-1 min-w-0">
+        <a
+          href="https://appmafia.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent hover:text-accent-hover font-medium text-sm underline-offset-2 hover:underline transition-colors"
+        >
+          Learn the education-first marketing playbook → App Mafia Course
+        </a>
       </div>
+      <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+        <div
+          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+            checked ? 'bg-success border-success text-card' : 'border-border hover:border-accent'
+          }`}
+          onClick={onCheck}
+        >
+          {checked && <span className="text-xs leading-none">✓</span>}
+        </div>
+        <span className="text-xs text-text-secondary">Done</span>
+      </label>
     </div>
   );
 }
@@ -161,7 +168,6 @@ function DayCard({ entry, isExpanded, onToggle }) {
       }`}
       onClick={onToggle}
     >
-      {/* Collapsed view */}
       <div className="p-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-bold text-text-secondary">Day {entry.day}</span>
@@ -181,7 +187,6 @@ function DayCard({ entry, isExpanded, onToggle }) {
         </div>
       </div>
 
-      {/* Expanded detail */}
       {isExpanded && (
         <div className="border-t border-accent/20 p-4 space-y-3">
           <div>
@@ -416,7 +421,6 @@ function TabbedContent({ data }) {
 
   return (
     <div>
-      {/* Tab bar */}
       <div className="flex gap-1 mb-4 bg-background rounded-xl p-1 border border-border overflow-x-auto">
         {tabs.map((tab, i) => (
           <button
@@ -432,7 +436,6 @@ function TabbedContent({ data }) {
           </button>
         ))}
       </div>
-      {/* Tab content */}
       <div>{renderContent(tabs[activeTab].key)}</div>
     </div>
   );
@@ -596,8 +599,11 @@ export function MarketingPlan({ userData }) {
   const ai2 = useAI();
   const ai3 = useAI();
 
-  const brandName = userData?.name || 'My Brand';
-  const brandDesc = userData?.brandIdea || 'an exciting new beverage brand';
+  // Get brand context from brainstorm localStorage
+  const { idea: brandIdea, feedback: brandFeedback, brandName: storedName } = getBrandContext();
+  const brandName = storedName || userData?.name || 'My Brand';
+  const brandDesc = brandIdea || userData?.brandIdea || 'an exciting new beverage brand';
+  const marketFeedback = brandFeedback || '';
 
   // Persist + update sectionProgress
   function persist(key, value) {
@@ -622,36 +628,40 @@ export function MarketingPlan({ userData }) {
 
   // ── Batch 1 ──────────────────────────────────────────────────────────────
 
-  const BATCH1_SYSTEM = `You are a beverage brand launch strategist. The user is launching ${brandName} — ${brandDesc} in Canada. They have $0 marketing budget and need to build an audience from scratch using organic content.
+  const BATCH1_SYSTEM = `You are a beverage brand launch strategist. The user is launching "${brandName}" — ${brandDesc} in Canada.
 
-Create a 30-day content calendar with this structure. Return as JSON:
+Market research context: ${marketFeedback}
+
+They have $0 marketing budget and need to build an audience from scratch using organic content.
+
+Create a 30-day content calendar specific to THEIR brand concept and target audience. Return as JSON:
 {
-  "strategy_summary": "2-3 sentence overview",
-  "content_pillars": ["pillar1", "pillar2", "pillar3"],
+  "strategy_summary": "2-3 sentence overview specific to their brand concept",
+  "content_pillars": ["pillar1 relevant to their brand", "pillar2", "pillar3"],
   "calendar": [
     {
       "day": 1,
       "platform": "Instagram/TikTok",
       "content_type": "Reel/Story/Post/Carousel",
-      "topic": "specific topic",
-      "caption_hook": "first line of caption",
-      "education_angle": "what the audience learns",
+      "topic": "specific topic relevant to their product",
+      "caption_hook": "first line of caption referencing their brand",
+      "education_angle": "what the audience learns about their category",
       "cta": "call to action"
     }
   ]
 }
 
-The content should follow the education-first framework:
-- Days 1-10: Educate (teach about the category, ingredients, culture, behind-the-scenes)
-- Days 11-20: Engage (polls, Q&As, UGC prompts, hot takes)
+Follow the education-first framework:
+- Days 1-10: Educate (teach about their specific category, ingredients, culture, behind-the-scenes)
+- Days 11-20: Engage (polls, Q&As, UGC prompts, hot takes on their niche)
 - Days 21-30: Convert (tease product, waitlist, pre-orders, founding member offers)
 
-Be specific to alcohol/beverage. Include trending content formats.`;
+Be specific to their product type and competitive landscape. Include trending content formats.`;
 
   async function generateBatch1() {
     const raw = await ai1.callAI(
       BATCH1_SYSTEM,
-      `Generate the full 30-day content calendar for ${brandName} — ${brandDesc}. Return ONLY valid JSON, no markdown fences.`
+      `Brand concept: ${brandDesc}\nBrand name: ${brandName}\nMarket feedback: ${marketFeedback}\n\nGenerate the full 30-day content calendar. Return ONLY valid JSON, no markdown fences.`
     );
     if (!raw) return;
     try {
@@ -659,7 +669,6 @@ Be specific to alcohol/beverage. Include trending content formats.`;
       const parsed = JSON.parse(clean);
       setBatch1(parsed);
     } catch {
-      // Try to extract JSON from response
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) {
         try {
@@ -679,37 +688,39 @@ Be specific to alcohol/beverage. Include trending content formats.`;
 
   // ── Batch 2 ──────────────────────────────────────────────────────────────
 
-  const BATCH2_SYSTEM = `You are a beverage brand launch strategist helping ${brandName} — ${brandDesc} in Canada.
+  const BATCH2_SYSTEM = `You are a beverage brand launch strategist helping "${brandName}" — ${brandDesc} in Canada.
 
-Generate a complete launch campaign. Return as JSON with this exact structure:
+Market context: ${marketFeedback}
+
+Generate a complete launch campaign specific to this brand. Return as JSON with this exact structure:
 {
   "email_sequence": [
-    { "subject": "email subject", "body": "full email body" }
+    { "subject": "email subject referencing ${brandName}", "body": "full email body specific to their brand" }
   ],
   "social_launch_plan": [
-    { "day": 1, "theme": "day theme", "platforms": ["Instagram", "TikTok"], "content": "what to post" }
+    { "day": 1, "theme": "day theme for ${brandName}", "platforms": ["Instagram", "TikTok"], "content": "what to post specific to their product" }
   ],
   "influencer_outreach": {
-    "dm_template": "short DM message for influencers",
-    "email_template": "longer email outreach for influencers"
+    "dm_template": "short DM mentioning ${brandName} and their specific product category",
+    "email_template": "longer email outreach specific to their brand and niche"
   },
   "waitlist_landing_page": {
-    "headline": "compelling headline",
-    "subheadline": "supporting subheadline",
+    "headline": "compelling headline for ${brandName}",
+    "subheadline": "supporting subheadline specific to their product",
     "cta": "CTA button text",
-    "value_props": ["value prop 1", "value prop 2", "value prop 3"]
+    "value_props": ["value prop 1 specific to their product", "value prop 2", "value prop 3"]
   }
 }
 
-email_sequence: 5 emails — welcome, story, sneak peek, early access, launch day.
-social_launch_plan: 7-day launch week plan.
-influencer_outreach: DM template (short) + email template (detailed).
-waitlist_landing_page: headline, subheadline, CTA button text, and 3 value props.`;
+email_sequence: 5 emails — welcome, story, sneak peek, early access, launch day. Each must reference ${brandName} specifically.
+social_launch_plan: 7-day launch week. Content specific to their product category.
+influencer_outreach: Target influencers in their niche (${marketFeedback ? 'see market context above' : 'beverage/lifestyle'}).
+waitlist_landing_page: Specific to their brand positioning.`;
 
   async function generateBatch2() {
     const raw = await ai2.callAI(
       BATCH2_SYSTEM,
-      `Generate the full launch campaign for ${brandName} — ${brandDesc}. Return ONLY valid JSON, no markdown fences.`
+      `Brand: ${brandName} — ${brandDesc}\nMarket feedback: ${marketFeedback}\n\nGenerate the full launch campaign. Return ONLY valid JSON, no markdown fences.`
     );
     if (!raw) return;
     try {
@@ -736,29 +747,31 @@ waitlist_landing_page: headline, subheadline, CTA button text, and 3 value props
 
   // ── Batch 3 ──────────────────────────────────────────────────────────────
 
-  const BATCH3_SYSTEM = `You are a beverage brand growth strategist helping ${brandName} — ${brandDesc} in Canada.
+  const BATCH3_SYSTEM = `You are a beverage brand growth strategist helping "${brandName}" — ${brandDesc} in Canada.
 
-Generate a growth playbook. Return as JSON with this exact structure:
+Market context and competitors: ${marketFeedback}
+
+Generate a growth playbook specific to their niche. Return as JSON with this exact structure:
 {
   "partnerships": [
-    { "idea": "partnership idea", "description": "how it works", "benefit": "why it helps" }
+    { "idea": "partnership idea specific to their product category and niche", "description": "how it works for ${brandName}", "benefit": "why it helps them specifically" }
   ],
-  "referral_program": "Detailed referral program structure and mechanics",
+  "referral_program": "Detailed referral program structure specific to their brand and price point",
   "month_2_3_calendar": [
-    { "week": 1, "theme": "week theme", "content": "what to focus on" }
+    { "week": 1, "theme": "week theme relevant to their product", "content": "what to focus on" }
   ],
-  "metrics": "Key metrics and benchmarks to track for weeks 5-12, including engagement rates, follower growth targets, email open rates, waitlist conversion rates, and revenue milestones"
+  "metrics": "Key metrics and benchmarks for their specific category, including engagement rates, follower growth targets, email open rates, waitlist conversion rates, and revenue milestones"
 }
 
-partnerships: exactly 3 partnership/collab ideas specific to the beverage industry.
-referral_program: full structure with rewards, mechanics, and referral copy.
-month_2_3_calendar: 8 weeks of content themes (weeks 5-12).
-metrics: detailed benchmarks and KPIs.`;
+partnerships: exactly 3 partnership/collab ideas specific to their niche and competitors.
+referral_program: full structure tailored to their product type.
+month_2_3_calendar: 8 weeks of content themes (weeks 5-12) specific to their brand.
+metrics: benchmarks relevant to their category.`;
 
   async function generateBatch3() {
     const raw = await ai3.callAI(
       BATCH3_SYSTEM,
-      `Generate the growth playbook for ${brandName} — ${brandDesc}. Return ONLY valid JSON, no markdown fences.`
+      `Brand: ${brandName} — ${brandDesc}\nNiche/competitors: ${marketFeedback}\n\nGenerate the growth playbook. Return ONLY valid JSON, no markdown fences.`
     );
     if (!raw) return;
     try {
@@ -787,16 +800,18 @@ metrics: detailed benchmarks and KPIs.`;
   const batch2Saved = !!storage.marketing?.batch2;
   const batch3Saved = !!storage.marketing?.batch3;
 
+  const { hasBrainstorm } = getBrandContext();
+
   return (
     <div className="max-w-4xl mx-auto py-10 px-6">
       {/* Page header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-4xl">📣</span>
           <div>
             <h1 className="font-display text-3xl text-text-primary">Marketing Plan</h1>
             <p className="text-text-secondary">
-              Build your go-to-market strategy in 3 progressive phases.
+              Build your go-to-market strategy in 3 phases.
             </p>
           </div>
         </div>
@@ -806,6 +821,8 @@ metrics: detailed benchmarks and KPIs.`;
           </div>
         )}
       </div>
+
+      {!hasBrainstorm && <BrainstormNudge />}
 
       {/* Education banner */}
       <EducationBanner checked={eduChecked} onCheck={() => setEduChecked(!eduChecked)} />
@@ -819,7 +836,9 @@ metrics: detailed benchmarks and KPIs.`;
           locked={false}
           saved={batch1Saved}
         >
-          {/* Strategy summary (after generation) */}
+          <p className="text-sm text-text-secondary mb-4">
+            30-day content calendar tailored to your brand concept and audience.
+          </p>
           {batch1 && (
             <div className="mb-6 space-y-4">
               <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
@@ -896,6 +915,9 @@ metrics: detailed benchmarks and KPIs.`;
           locked={!batch1Saved}
           saved={batch2Saved}
         >
+          <p className="text-sm text-text-secondary mb-4">
+            Email sequence, launch week plan, influencer outreach, and landing page copy — all specific to your brand.
+          </p>
           {batch2 && (
             <div className="mb-6">
               <TabbedContent data={batch2} />
@@ -938,6 +960,9 @@ metrics: detailed benchmarks and KPIs.`;
           locked={!batch2Saved}
           saved={batch3Saved}
         >
+          <p className="text-sm text-text-secondary mb-4">
+            Partnership ideas, referral program, and growth calendar specific to your niche.
+          </p>
           {batch3 && (
             <div className="mb-6">
               <GrowthContent data={batch3} />
