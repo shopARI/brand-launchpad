@@ -113,7 +113,7 @@ function EducationBanner({ checked, onCheck }) {
             "Start by educating your audience, not selling to them."
           </p>
           <a
-            href="https://www.appmafia.co"
+            href="https://appmafia.com/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-accent hover:text-accent-hover font-medium text-sm underline-offset-2 hover:underline mb-5 transition-colors"
