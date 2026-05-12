@@ -1,3 +1,4 @@
+import { Financing as FinancingComponent } from '../components/Financing';
 // Placeholder section components for all 8 modules
 // These will be replaced with full implementations in Modules 2-9
 
@@ -44,14 +45,7 @@ export function Brainstorm({ userData }) {
 }
 
 export function Financing() {
-  return (
-    <PlaceholderSection
-      emoji="💰"
-      title="Financing & Grants"
-      description="Discover funding opportunities, grants, and financing strategies for your beverage brand."
-      module={2}
-    />
-  );
+  return <FinancingComponent />;
 }
 
 export function Pricing() {
