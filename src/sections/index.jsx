@@ -1,7 +1,12 @@
+// Section components for all 8 modules.
+// Full implementations: Brainstorm (2), Financing (3), Pricing (4),
+//   Branding (5), Marketing (6), PreOrder (7), Production (8).
+// Calendar is a placeholder.
+
 import { Financing as FinancingComponent } from '../components/Financing';
 import { MarketingPlan } from '../components/MarketingPlan';
-// Module 6 (Pre-Order Setup) is fully implemented via PreOrderSetup component
 import PreOrderSetupFull from '../components/PreOrderSetup';
+import { PricingCalculator } from '../components/PricingCalculator';
 
 // Module 2: Brainstorm — fully implemented
 export { Brainstorm } from '../components/Brainstorm';
@@ -30,14 +35,7 @@ export function Financing() {
 }
 
 export function Pricing() {
-  return (
-    <PlaceholderSection
-      emoji="🧮"
-      title="Pricing Calculator"
-      description="Calculate COGS, set pricing tiers, and model your margins with precision."
-      module={3}
-    />
-  );
+  return <PricingCalculator />;
 }
 
 export function Marketing({ userData, storage }) {
