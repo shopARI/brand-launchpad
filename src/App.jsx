@@ -14,17 +14,6 @@ import {
   Calendar,
 } from './sections';
 
-const SECTION_COMPONENTS = {
-  brainstorm: Brainstorm,
-  financing: Financing,
-  pricing: Pricing,
-  branding: Branding,
-  marketing: Marketing,
-  preorder: PreOrder,
-  production: Production,
-  calendar: Calendar,
-};
-
 function useAppState() {
   // Lazy initializers read localStorage once at mount — no effects needed
   const [storage, setStorage] = useState(() => getStorage());
@@ -76,7 +65,20 @@ export default function App() {
     setMobileMenuOpen,
   } = useAppState();
 
-  const ActiveSection = SECTION_COMPONENTS[activeSection] || Brainstorm;
+  // Render the active section, passing onNavigate to Calendar for section-link navigation
+  function renderActiveSection() {
+    switch (activeSection) {
+      case 'brainstorm': return <Brainstorm />;
+      case 'financing':  return <Financing />;
+      case 'pricing':    return <Pricing />;
+      case 'branding':   return <Branding />;
+      case 'marketing':  return <Marketing />;
+      case 'preorder':   return <PreOrder />;
+      case 'production': return <Production />;
+      case 'calendar':   return <Calendar onNavigate={handleSectionChange} />;
+      default:           return <Brainstorm />;
+    }
+  }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -98,7 +100,7 @@ export default function App() {
       <main className="flex-1 overflow-y-auto relative">
         {/* Mobile top padding for hamburger button */}
         <div className="md:hidden h-16" />
-        <ActiveSection />
+        {renderActiveSection()}
       </main>
 
       {/* Modals */}
