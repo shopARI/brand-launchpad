@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp, AlertTriangle, CheckSquare, Square, BadgeCheck } from 'lucide-react';
 import { getStorage, updateStorage } from '../utils/storage';
 
@@ -306,16 +306,14 @@ function ChecklistItem({ item, checked, onToggle }) {
 // ---------------------------------------------------------------------------
 
 export function ProductionBrief() {
-  const [checklistState, setChecklistState] = useState({});
-  const [reviewed, setReviewed] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const storage = getStorage();
-    const prod = storage.production || {};
-    setReviewed(prod.reviewed || false);
-    setChecklistState(prod.checklist || {});
-  }, []);
+  const [checklistState, setChecklistState] = useState(() => {
+    const prod = getStorage().production || {};
+    return prod.checklist || {};
+  });
+  const [reviewed, setReviewed] = useState(() => {
+    const prod = getStorage().production || {};
+    return prod.reviewed || false;
+  });
 
   // Persist checklist item toggle
   const handleChecklistToggle = useCallback((id) => {
