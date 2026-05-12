@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Sidebar, MobileMenuButton } from './components/Sidebar';
-import { OnboardingModal } from './components/OnboardingModal';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { SettingsModal } from './components/SettingsModal';
 import { getStorage } from './utils/storage';
 import {
@@ -65,6 +65,11 @@ export default function App() {
     setMobileMenuOpen,
   } = useAppState();
 
+  // First-load: full-page welcome takes over — no sidebar, no app shell
+  if (showOnboarding) {
+    return <WelcomeScreen onComplete={handleOnboardingComplete} />;
+  }
+
   // Render the active section, passing onNavigate to Calendar for section-link navigation
   function renderActiveSection() {
     switch (activeSection) {
@@ -100,13 +105,16 @@ export default function App() {
       <main className="flex-1 overflow-y-auto relative">
         {/* Mobile top padding for hamburger button */}
         <div className="md:hidden h-16" />
+
+        {/* Returning user — subtle welcome-back line */}
+        {storage.user.name && (
+          <p className="text-sm text-text-secondary px-6 pt-4 pb-0">
+            Welcome back, {storage.user.name}.
+          </p>
+        )}
+
         {renderActiveSection()}
       </main>
-
-      {/* Modals */}
-      {showOnboarding && (
-        <OnboardingModal onComplete={handleOnboardingComplete} />
-      )}
 
       {showSettings && (
         <SettingsModal

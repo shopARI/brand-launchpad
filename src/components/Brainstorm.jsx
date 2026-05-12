@@ -161,8 +161,8 @@ export function Brainstorm() {
         <h1 className="font-display text-3xl text-text-primary mb-2">
           What&rsquo;s Your Brand Idea?
         </h1>
-        <p className="text-text-secondary leading-relaxed">
-          Describe your concept and get real feedback from an AI beverage industry advisor.
+        <p className="text-text-secondary">
+          Get real feedback from an AI beverage industry advisor.
         </p>
       </div>
 
@@ -179,7 +179,7 @@ export function Brainstorm() {
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           rows={5}
-          placeholder="Describe your beverage brand idea — the product, who it's for, what makes it different, why you're excited about it..."
+          placeholder="Describe your beverage brand idea — the product, who it\'s for, and what makes it different..."
           className="w-full resize-y rounded-xl border border-border bg-background px-4 py-3 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-colors text-sm leading-relaxed"
           disabled={loading}
         />
@@ -221,7 +221,7 @@ export function Brainstorm() {
             <>
               {/* Feedback header */}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-xl text-text-primary">
+                <h2 className="font-semibold text-text-primary">
                   Advisor Feedback
                 </h2>
                 <button
@@ -252,8 +252,8 @@ export function Brainstorm() {
               <div className="mt-6 pt-5 border-t border-border flex items-center justify-between">
                 <p className="text-xs text-text-secondary/70">
                   {isSaved
-                    ? 'Progress saved. Come back anytime to refine further.'
-                    : 'Save your idea and feedback to track progress.'}
+                    ? 'Saved.'
+                    : 'Save to continue.'}
                 </p>
                 {isSaved ? (
                   <span className="flex items-center gap-1.5 text-success text-sm font-medium">
@@ -276,12 +276,13 @@ export function Brainstorm() {
 
       {/* Refine My Idea */}
       {feedback && !loading && (
-        <div className="bg-card border border-border rounded-2xl p-6 mb-6">
-          <h2 className="font-display text-lg text-text-primary mb-1">
-            Refine My Idea
+        <div className="bg-background border border-dashed border-border/60 rounded-2xl p-6 mb-6">
+          <h2 className="font-display text-lg text-text-primary mb-1 flex items-center">
+            Refine Your Idea
+            <span className="text-xs bg-border/40 text-text-secondary px-2 py-0.5 rounded-full ml-2">Optional</span>
           </h2>
           <p className="text-sm text-text-secondary mb-4 leading-relaxed">
-            Share more context or ask a follow-up. The AI will build on your previous idea and feedback to give deeper guidance.
+            Dig deeper or ask a follow-up.
           </p>
           <textarea
             id="refine-idea"
@@ -296,7 +297,7 @@ export function Brainstorm() {
             <button
               onClick={handleRefine}
               disabled={!refineText.trim() || loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white text-sm font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-accent text-accent bg-transparent hover:bg-accent/10 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
                 <>
@@ -304,7 +305,7 @@ export function Brainstorm() {
                   Refining&hellip;
                 </>
               ) : (
-                'Refine My Idea'
+                'Refine Your Idea'
               )}
             </button>
           </div>

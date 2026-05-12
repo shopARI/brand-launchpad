@@ -3,6 +3,28 @@ import ReactMarkdown from 'react-markdown';
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
 
+// ─── Brand context helper ────────────────────────────────────────────────────
+
+function getBrandContext() {
+  try {
+    const data = JSON.parse(localStorage.getItem('brandLaunchpad') || '{}');
+    return {
+      idea: data?.brainstorm?.currentIdea || '',
+      feedback: data?.brainstorm?.feedback || '',
+      hasBrainstorm: !!(data?.brainstorm?.currentIdea),
+      brandName: data?.branding?.name || '',
+    };
+  } catch {
+    return { idea: '', feedback: '', hasBrainstorm: false, brandName: '' };
+  }
+}
+
+const BrainstormNudge = () => (
+  <div className="mb-6 px-4 py-3 rounded-xl border border-dashed border-amber-300/60 bg-amber-50/30 text-sm text-text-secondary">
+    Complete <strong>Brainstorm</strong> first to personalize this section to your brand.
+  </div>
+);
+
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const PLATFORMS = [
@@ -151,16 +173,16 @@ const CHECKLIST_ITEMS = [
   { id: 'shared_5', label: 'Shared the pre-order link with at least 5 friends or contacts' },
 ];
 
-const SYSTEM_PROMPT = `You are an expert copywriter specializing in beverage brand launches and direct-to-consumer pre-order campaigns. Your task is to generate compelling pre-order page copy for a new beverage brand.
+const SYSTEM_PROMPT = `You are an expert copywriter specializing in beverage brand launches and direct-to-consumer pre-order campaigns. Generate compelling pre-order page copy specific to the brand concept provided.
 
-Generate the following elements in this exact JSON format:
+Return this exact JSON format:
 {
-  "headline": "A punchy, memorable headline for the pre-order page (max 10 words)",
-  "subheadline": "A supporting sentence that explains the value proposition (max 20 words)",
+  "headline": "A punchy headline specific to their brand (max 10 words)",
+  "subheadline": "A supporting sentence with their value proposition (max 20 words)",
   "bullets": [
-    "First key benefit or selling point",
-    "Second key benefit or selling point",
-    "Third key benefit or selling point"
+    "First key benefit specific to their product",
+    "Second key benefit",
+    "Third key benefit"
   ],
   "cta": "Call-to-action button text (max 5 words)",
   "faq": [
@@ -172,7 +194,7 @@ Generate the following elements in this exact JSON format:
   ]
 }
 
-Make the copy feel authentic, exciting, and conversion-focused. Use the brand information provided. Return ONLY valid JSON — no markdown, no extra text.`;
+Make the copy feel authentic and conversion-focused. Use the brand information to make it specific — not generic. Return ONLY valid JSON.`;
 
 // ─── Toast Component ─────────────────────────────────────────────────────────
 
@@ -201,7 +223,6 @@ function CopyButton({ text, label = '📋 Copy' }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for environments without clipboard access
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -226,8 +247,6 @@ function CopyButton({ text, label = '📋 Copy' }) {
     </button>
   );
 }
-
-// ─── CopyField — defined at module scope to avoid "component created during render" ──
 
 function CopyField({ label, value }) {
   return (
@@ -275,55 +294,16 @@ function StepIndicator({ step, current, label }) {
 
 // ─── Section 1: Why Pre-Orders ───────────────────────────────────────────────
 
-const WHY_BENEFITS = [
-  {
-    icon: '✅',
-    title: 'Validate Real Demand',
-    desc: 'Real money from real customers proves your concept before you invest in production.',
-  },
-  {
-    icon: '💼',
-    title: 'Strengthen Funding Applications',
-    desc: 'Pre-order revenue and a customer list make you dramatically more credible to investors and grant programs.',
-  },
-  {
-    icon: '💰',
-    title: 'Gauge Price Sensitivity',
-    desc: 'See exactly what customers will pay at different price points with zero risk.',
-  },
-  {
-    icon: '📬',
-    title: 'Build Your Customer List Early',
-    desc: 'Every pre-order is a warm lead. Your first buyers become your most loyal advocates.',
-  },
-  {
-    icon: '🏆',
-    title: 'Proven by Successful Brands',
-    desc: 'Liquid Death, Athletic Brewing, and dozens of craft beverage brands used pre-orders to launch. If it worked for them, it can work for you.',
-  },
-];
-
 function WhyPreOrdersSection() {
   return (
-    <div className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-2xl p-6 mb-8">
-      <div className="flex items-center gap-3 mb-5">
+    <div className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-2xl p-5 mb-8">
+      <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">🚀</span>
-        <div>
-          <h2 className="font-display text-xl text-text-primary">Why Start With Pre-Orders?</h2>
-          <p className="text-sm text-text-secondary">5 reasons pre-orders are the smart first move</p>
-        </div>
+        <h2 className="font-display text-xl text-text-primary">Why Start With Pre-Orders?</h2>
       </div>
-      <div className="grid gap-3">
-        {WHY_BENEFITS.map((b) => (
-          <div key={b.title} className="flex gap-3 bg-white/60 rounded-xl p-4">
-            <span className="text-xl flex-shrink-0 mt-0.5">{b.icon}</span>
-            <div>
-              <p className="font-semibold text-text-primary text-sm">{b.title}</p>
-              <p className="text-text-secondary text-sm mt-0.5">{b.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <p className="text-sm text-text-secondary leading-relaxed">
+        Pre-orders validate real demand before you invest in production — every buyer is proof of concept. They strengthen funding applications, reveal price sensitivity, and build your customer list. Liquid Death, Athletic Brewing, and dozens of craft brands launched this way.
+      </p>
     </div>
   );
 }
@@ -341,7 +321,6 @@ function PlatformTable({ selectedPlatform, onSelectPlatform }) {
     <div className="mb-8">
       <h2 className="font-display text-2xl text-text-primary mb-2">Choose Your Platform</h2>
       <p className="text-text-secondary mb-5">
-        Select the platform that best fits your stage.{' '}
         <span className="text-accent font-medium">⭐ Recommended options highlighted.</span>
       </p>
       <div className="overflow-x-auto rounded-2xl border border-border">
@@ -395,7 +374,7 @@ function PlatformTable({ selectedPlatform, onSelectPlatform }) {
         </table>
       </div>
       <p className="text-xs text-text-secondary mt-3 italic">
-        💡 We recommend <strong>Shopify</strong> for a full store experience or <strong>Carrd + Stripe</strong> for the fastest, lowest-cost launch.
+        💡 We recommend <strong>Shopify</strong> for a full store or <strong>Carrd + Stripe</strong> for the fastest, lowest-cost launch.
       </p>
     </div>
   );
@@ -407,7 +386,7 @@ function Step1PlatformSelect({ selected, onChange }) {
   return (
     <div>
       <p className="text-text-secondary text-sm mb-4">
-        Choose a platform from the table above, or select one here:
+        Select your platform:
       </p>
       <div className="grid gap-3">
         {PLATFORMS.map((p) => (
@@ -475,22 +454,20 @@ function Step2Instructions({ platform }) {
 
 // ─── Step 3: AI Copy Generation ───────────────────────────────────────────────
 
-function Step3AICopy({ brandIdea, platform }) {
+function Step3AICopy({ platform }) {
   const { callAI, loading, error } = useAI();
   const [copy, setCopy] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: '' });
 
-  // showToast is used by copy success feedback at component level
   const showToast = useCallback((msg) => {
     setToast({ visible: true, message: msg });
     setTimeout(() => setToast({ visible: false, message: '' }), 2500);
   }, []);
 
   const handleGenerate = useCallback(async () => {
+    const { idea, feedback, brandName } = getBrandContext();
     const platformName = PLATFORMS.find((p) => p.id === platform)?.name || platform || 'a landing page';
-    const userMessage = `Brand concept: ${brandIdea || 'a new beverage brand'}
-Platform: ${platformName}
-Generate pre-order page copy for this brand. Make it conversion-focused and exciting.`;
+    const userMessage = `Brand concept: ${idea || 'a new beverage brand'}\nBrand name: ${brandName || 'TBD'}\nMarket feedback & positioning: ${feedback || ''}\nPlatform: ${platformName}\nGenerate pre-order page copy specific to this brand and product. Make it conversion-focused and brand-specific.`;
 
     const result = await callAI(SYSTEM_PROMPT, userMessage);
     if (result) {
@@ -502,12 +479,12 @@ Generate pre-order page copy for this brand. Make it conversion-focused and exci
         setCopy({ raw: result });
       }
     }
-  }, [callAI, brandIdea, platform, showToast]);
+  }, [callAI, platform, showToast]);
 
   return (
     <div>
       <p className="text-text-secondary text-sm mb-4">
-        Generate professional pre-order page copy tailored to your brand concept and chosen platform.
+        Generate pre-order page copy tailored to your brand concept.
       </p>
       <button
         onClick={handleGenerate}
@@ -539,7 +516,7 @@ Generate pre-order page copy for this brand. Make it conversion-focused and exci
             <div className="bg-background rounded-xl p-4 border border-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                  Key Benefits (3 Bullets)
+                  Key Benefits
                 </span>
                 <CopyButton text={copy.bullets.join('\n')} label="📋 Copy All" />
               </div>
@@ -606,6 +583,13 @@ Generate pre-order page copy for this brand. Make it conversion-focused and exci
 function Step4Pricing() {
   const storage = getStorage();
   const retailPrice = parseFloat(storage?.pricing?.inputs?.retailPrice) || null;
+  const { feedback } = getBrandContext();
+
+  // Extract competitor pricing hint from brainstorm feedback
+  const competitorPricingMatch = feedback
+    ? feedback.match(/\$(\d+(?:\.\d+)?)\s*(?:per can|\/can|per unit|\/unit)/i)
+    : null;
+  const competitorPriceHint = competitorPricingMatch ? competitorPricingMatch[0] : null;
 
   const discount15 = retailPrice ? (retailPrice * 0.85).toFixed(2) : null;
   const discount20 = retailPrice ? (retailPrice * 0.80).toFixed(2) : null;
@@ -620,15 +604,21 @@ function Step4Pricing() {
   return (
     <div>
       <p className="text-text-secondary text-sm mb-4">
-        A 15–25% pre-order discount incentivizes early buyers and rewards their trust.
+        A 15–25% pre-order discount rewards early buyers and incentivizes action.
       </p>
+
+      {competitorPriceHint && (
+        <div className="bg-accent/5 border border-accent/20 rounded-xl p-3 mb-4 text-sm text-text-primary">
+          💡 Competitor pricing from your brainstorm: <strong>{competitorPriceHint}</strong> — factor this into your positioning.
+        </div>
+      )}
 
       {retailPrice ? (
         <div>
           <div className="bg-success/10 border border-success/20 rounded-xl p-3 mb-4 flex items-center gap-2">
             <span className="text-success">✓</span>
             <span className="text-sm text-success font-medium">
-              Retail price pulled from Pricing Calculator:{' '}
+              Retail price from Pricing Calculator:{' '}
               <strong>${retailPrice.toFixed(2)}</strong>
             </span>
           </div>
@@ -653,15 +643,14 @@ function Step4Pricing() {
             ))}
           </div>
           <p className="text-xs text-text-secondary mt-4 italic">
-            💡 We recommend the 20% discount — it feels meaningful to buyers without deeply undercutting your retail margin.
+            💡 20% discount feels meaningful without deeply undercutting your retail margin.
           </p>
         </div>
       ) : (
         <div className="bg-warning/10 border border-warning/20 rounded-xl p-4">
           <p className="text-sm text-warning font-medium mb-1">⚠️ No retail price found</p>
           <p className="text-sm text-text-secondary">
-            Complete the Pricing Calculator module first to automatically pull your retail price here.
-            As a general guideline, offer a <strong>15–25% discount</strong> off your planned retail price.
+            Complete the Pricing Calculator to auto-pull your retail price. General guideline: offer <strong>15–25% off</strong> your planned retail price.
           </p>
           <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
             <div className="bg-white rounded-lg p-2 border border-border">
@@ -756,7 +745,6 @@ const STEPS = [
   { number: 5, label: 'Launch Checklist' },
 ];
 
-// Lazy initializers avoid calling setState in effects
 function initPlatform() {
   const s = getStorage();
   return s.preorder?.platform || '';
@@ -767,12 +755,13 @@ function initChecklist() {
   return s.preorder?.checklist || {};
 }
 
-export default function PreOrderSetup({ userData }) {
+export default function PreOrderSetup() {
   const [platform, setPlatform] = useState(initPlatform);
   const [checklist, setChecklist] = useState(initChecklist);
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Persist changes and update section progress
+  const { hasBrainstorm } = getBrandContext();
+
   useEffect(() => {
     const completedCount = CHECKLIST_ITEMS.filter((item) => checklist[item.id]).length;
     const pct =
@@ -813,11 +802,13 @@ export default function PreOrderSetup({ userData }) {
           <div>
             <h1 className="font-display text-3xl text-text-primary">Pre-Order Setup</h1>
             <p className="text-text-secondary">
-              Launch your pre-order campaign and start generating real revenue before production.
+              Launch your pre-order and start generating revenue before production.
             </p>
           </div>
         </div>
       </div>
+
+      {!hasBrainstorm && <BrainstormNudge />}
 
       {/* Section 1: Why Pre-Orders */}
       <WhyPreOrdersSection />
@@ -829,7 +820,6 @@ export default function PreOrderSetup({ userData }) {
       <div>
         <h2 className="font-display text-2xl text-text-primary mb-6">Step-by-Step Setup</h2>
 
-        {/* Step navigation */}
         <div className="grid gap-3 mb-8">
           {STEPS.map((s) => (
             <button
@@ -842,7 +832,6 @@ export default function PreOrderSetup({ userData }) {
           ))}
         </div>
 
-        {/* Active Step Content */}
         <div className="bg-white border border-border rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-5">
             <span className="w-7 h-7 rounded-full bg-accent text-white text-sm font-bold flex items-center justify-center">
@@ -858,14 +847,13 @@ export default function PreOrderSetup({ userData }) {
           )}
           {currentStep === 2 && <Step2Instructions platform={platform} />}
           {currentStep === 3 && (
-            <Step3AICopy brandIdea={userData?.brandIdea} platform={platform} />
+            <Step3AICopy platform={platform} />
           )}
           {currentStep === 4 && <Step4Pricing />}
           {currentStep === 5 && (
             <Step5Checklist checklist={checklist} onChange={handleChecklistChange} />
           )}
 
-          {/* Navigation buttons */}
           <div className="flex justify-between mt-6 pt-5 border-t border-border">
             <button
               onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}

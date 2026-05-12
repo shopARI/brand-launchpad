@@ -2,7 +2,59 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Save } from 'lucide-react';
 import { updateStorage, getStorage } from '../utils/storage';
 
-// ─── Term definitions ────────────────────────────────────────────────────────
+// ─── Brand context from localStorage ─────────────────────────────────────────
+function getBrandContext() {
+  try {
+    const data = getStorage();
+    return {
+      idea: data?.brainstorm?.currentIdea || '',
+      feedback: data?.brainstorm?.feedback || '',
+      hasBrainstorm: !!(data?.brainstorm?.currentIdea),
+      brandName: data?.branding?.name || '',
+      costBreakdown: data?.financing?.costBreakdown || null,
+      marketingBatches: [data?.marketing?.batch1, data?.marketing?.batch2, data?.marketing?.batch3].filter(Boolean).length,
+      preorderPlatform: data?.preorder?.platform || '',
+      productionChecklist: data?.production?.checklist || null,
+    };
+  } catch {
+    return { idea: '', feedback: '', hasBrainstorm: false, brandName: '', costBreakdown: null, marketingBatches: 0, preorderPlatform: '', productionChecklist: null };
+  }
+}
+
+// ─── Auto-detect category from brand text ────────────────────────────────────
+function detectCategory(text) {
+  if (!text) return null;
+  const t = text.toLowerCase();
+  if (/rtd|canned cocktail|hard tea|hard lemonade|ready.to.drink/.test(t)) return 'canned-cocktail';
+  if (/hard seltzer|seltzer/.test(t)) return 'hard-seltzer';
+  if (/spirit|gin|whisky|whiskey|vodka|rum|tequila|mezcal/.test(t)) return 'spirit';
+  if (/wine|rosé|rose|sparkling|prosecco|cider/.test(t)) return 'wine';
+  if (/beer|lager|ale|ipa|stout|craft beer/.test(t)) return 'beer';
+  if (/non.alc|non-alc|kombucha|jun|kefir|juice|soda|water|energy/.test(t)) return 'non-alc';
+  return null;
+}
+
+// ─── Parse competitor names from feedback ────────────────────────────────────
+function parseCompetitors(feedback) {
+  if (!feedback) return [];
+  // Match capitalized brand-like names near $ prices
+  const competitors = [];
+  const lines = feedback.split('\n');
+  for (const line of lines) {
+    if (/competitor|compet|direct|brand|similar|rival|\$\d/i.test(line)) {
+      // Extract capitalized brand-like words (2+ capital words)
+      const brandMatches = line.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\b/g) || [];
+      for (const m of brandMatches) {
+        if (m.length > 3 && !['The','This','They','Your','When','What','Who','For','With','From','That','These','Their','Canadian','Canada'].includes(m)) {
+          competitors.push(m);
+        }
+      }
+    }
+  }
+  return [...new Set(competitors)].slice(0, 3);
+}
+
+// ─── Term definitions ─────────────────────────────────────────────────────────
 const TERMS = [
   {
     id: 'cogs',
@@ -10,11 +62,8 @@ const TERMS = [
     term: 'COGS',
     shortDef: 'Cost of Goods Sold. What it costs YOU to make one unit.',
     fullExplanation: [
-      { type: 'body', text: 'COGS (Cost of Goods Sold) is the total direct cost to produce one unit of your product. For a beverage brand, this includes ingredients, packaging, co-packing fees, and inbound shipping.' },
-      { type: 'heading', text: 'Why it matters' },
-      { type: 'body', text: 'If your COGS is too high, you can\'t make a profit even with a high retail price.' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Ingredients: $1.20\n• Can + lid: $0.45\n• Label printing: $0.15\n• Co-packing fee: $0.80\n• Shipping (inbound): $0.40\n→ Total COGS: ~$3.00 (20% of retail)' },
+      { type: 'body', text: 'COGS is the total direct cost to produce one unit: ingredients, packaging, co-packing fees, and inbound shipping.' },
+      { type: 'body', text: 'If COGS is too high you can\'t profit even at a high retail price. Target 20–30% of retail for beverages.' },
     ],
   },
   {
@@ -23,11 +72,8 @@ const TERMS = [
     term: 'CAC',
     shortDef: 'Customer Acquisition Cost. How much you spend to get ONE customer.',
     fullExplanation: [
-      { type: 'body', text: 'CAC (Customer Acquisition Cost) tells you how much you\'re spending in marketing and sales to acquire one new customer.' },
-      { type: 'heading', text: 'Formula' },
-      { type: 'body', text: 'Total Marketing Spend ÷ Number of New Customers' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: 'If you spend $2,000/month on marketing and acquire 200 new customers:\n• CAC = $2,000 ÷ 200 = $10 per customer\n\nSince a customer might buy 2 cases/year ($360 revenue), a $10 CAC is very healthy.' },
+      { type: 'body', text: 'CAC = Total Marketing Spend ÷ New Customers acquired. Tells you whether your marketing is efficient.' },
+      { type: 'body', text: 'If a customer buys 2× per year and CAC < one unit\'s margin, you\'re profitable on acquisition.' },
     ],
   },
   {
@@ -36,11 +82,8 @@ const TERMS = [
     term: 'Gross Margin',
     shortDef: 'Revenue minus COGS. Money left after making the product.',
     fullExplanation: [
-      { type: 'body', text: 'Gross Margin is the percentage of revenue remaining after subtracting COGS. It tells you how efficiently you produce your product.' },
-      { type: 'heading', text: 'Formula' },
-      { type: 'body', text: '(Revenue – COGS) ÷ Revenue × 100\n\nBeverage brands typically target 60–75% gross margin.' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Retail Price: $15.00\n• COGS: $3.00\n• Gross Profit: $12.00\n→ Gross Margin: 80%\n\nYou have $12 left to cover marketing, rent, and profit.' },
+      { type: 'body', text: 'Gross Margin % = (Revenue – COGS) ÷ Revenue × 100. Beverage brands typically target 60–75%.' },
+      { type: 'body', text: 'Higher gross margin = more room for marketing, overhead, and profit.' },
     ],
   },
   {
@@ -49,11 +92,8 @@ const TERMS = [
     term: 'Net Margin',
     shortDef: 'What you actually keep after ALL expenses.',
     fullExplanation: [
-      { type: 'body', text: 'Net Margin is what remains after subtracting ALL costs — COGS, marketing, salaries, rent, software, insurance, and everything else.' },
-      { type: 'heading', text: 'Formula' },
-      { type: 'body', text: 'Net Profit ÷ Revenue × 100' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Revenue: $15.00\n• COGS: $3.00\n• Marketing alloc.: $2.00\n• Overhead: $1.50\n→ Net Profit: $8.50 (~57%)\n\nEarly-stage brands often operate at negative net margins — scaling drives it positive.' },
+      { type: 'body', text: 'Net Profit ÷ Revenue × 100. Subtracts COGS, marketing, salaries, rent, and every other cost.' },
+      { type: 'body', text: 'Early-stage brands often run negative net margins — scaling fixed costs over more units drives it positive.' },
     ],
   },
   {
@@ -62,11 +102,8 @@ const TERMS = [
     term: 'Wholesale Price',
     shortDef: 'What you charge stores/distributors. Usually 50% of retail.',
     fullExplanation: [
-      { type: 'body', text: 'Wholesale Price is what you charge retailers or distributors when they buy in bulk. They mark it up to retail price.' },
-      { type: 'heading', text: 'Industry Standard' },
-      { type: 'body', text: 'Wholesale is typically 50% of retail (gives the retailer a 50% margin).' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Retail Price: $15.00\n• Wholesale Price: $7.50 (50% of retail)\n• Your COGS: $3.00\n→ Gross Profit at Wholesale: $4.50\n→ Gross Profit at Retail: $12.00\n\nDTC (direct-to-consumer) is valuable — you capture the full retail margin.' },
+      { type: 'body', text: 'Wholesale is typically 50% of retail, giving the retailer a 50% margin to mark up to shelf price.' },
+      { type: 'body', text: 'DTC sales capture full retail margin — far more valuable per unit than wholesale channels.' },
     ],
   },
   {
@@ -75,11 +112,8 @@ const TERMS = [
     term: 'Retail Price',
     shortDef: 'What the customer pays in store or online.',
     fullExplanation: [
-      { type: 'body', text: 'Retail Price is the consumer-facing price — what someone pays at a store, bar, or on your website. Also called MSRP (Manufacturer\'s Suggested Retail Price).' },
-      { type: 'heading', text: 'How to set it' },
-      { type: 'body', text: 'Research competitors, factor in perceived value, and work backwards from your target margins.' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Market: Premium RTDs sell $12–$18\n• Positioning: craft, local, premium\n→ Retail Price: $15.00 (4-pack = $60)\n\nAt $15, you signal quality without pricing out casual buyers. Gross margin: 80% ✓' },
+      { type: 'body', text: 'Retail Price (MSRP) is the consumer-facing price. Research competitors and work backwards from your target margins.' },
+      { type: 'body', text: 'Price signals quality — too low can undermine premium positioning even if the margin math still works.' },
     ],
   },
   {
@@ -88,11 +122,8 @@ const TERMS = [
     term: 'Market Size (TAM)',
     shortDef: 'Total revenue available if you captured 100% of your category.',
     fullExplanation: [
-      { type: 'body', text: 'TAM (Total Addressable Market) is the total revenue opportunity if you captured 100% of your target market — unrealistic, but it sizes your opportunity.' },
-      { type: 'heading', text: 'Why it matters' },
-      { type: 'body', text: 'Investors and lenders need to know if the market is large enough to build a fundable business.' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Canadian RTD market: ~$800M/year\n• Premium segment (your target): ~20% = $160M\n• Realistic 0.5% market share target → $800K/year\n\nEven 0.5% of a large market is a significant, fundable business.' },
+      { type: 'body', text: 'TAM = total revenue if you owned the whole market. Even 0.5% of a $500M category is a real business.' },
+      { type: 'body', text: 'Investors need TAM to know the ceiling. Show your realistic SAM (serviceable addressable market) too.' },
     ],
   },
   {
@@ -101,11 +132,8 @@ const TERMS = [
     term: 'Contribution Margin',
     shortDef: 'Revenue minus variable costs per unit.',
     fullExplanation: [
-      { type: 'body', text: 'Contribution Margin is revenue minus all variable costs per unit. Unlike gross margin, it can include variable overhead like commissions and credit card fees.' },
-      { type: 'heading', text: 'Formula' },
-      { type: 'body', text: 'Revenue per unit – Variable Costs per unit' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Revenue: $15.00\n• COGS: $3.00\n• Variable costs (fees, commissions): $0.75\n→ Contribution Margin: $11.25\n\nEvery unit sold contributes $11.25 toward covering fixed costs and profit.' },
+      { type: 'body', text: 'Revenue per unit – all variable costs (COGS + commissions + payment fees). Each unit "contributes" this toward fixed costs.' },
+      { type: 'body', text: 'Once cumulative contribution margin covers all fixed costs, every additional unit is profit.' },
     ],
   },
   {
@@ -114,11 +142,8 @@ const TERMS = [
     term: 'Break-Even Point',
     shortDef: 'How many units to sell before you stop losing money.',
     fullExplanation: [
-      { type: 'body', text: 'Break-Even Point is the minimum number of units you must sell each month to cover all costs — COGS and fixed overhead — without losing money.' },
-      { type: 'heading', text: 'Formula' },
-      { type: 'body', text: 'Fixed Costs ÷ Contribution Margin per unit' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Fixed monthly costs: $5,000\n• Contribution margin per unit: $11.25\n→ Break-Even: 445 units/month (~37 cases)\n\nOnce you\'re selling 445+ cans per month, you\'re operationally profitable.' },
+      { type: 'body', text: 'Break-Even = Fixed Costs ÷ Contribution Margin per unit. Sell above this number each month and you\'re operationally profitable.' },
+      { type: 'body', text: 'Lower your fixed costs or raise your contribution margin to bring break-even within reach faster.' },
     ],
   },
   {
@@ -127,16 +152,13 @@ const TERMS = [
     term: 'MOQ',
     shortDef: 'Minimum Order Quantity. Smallest batch a manufacturer will produce.',
     fullExplanation: [
-      { type: 'body', text: 'MOQ (Minimum Order Quantity) is the smallest production run a co-packer or manufacturer will accept. Setup costs — filling lines, cleaning, labeling — apply regardless of batch size.' },
-      { type: 'heading', text: 'Why it matters' },
-      { type: 'body', text: 'If MOQ is 10,000 units but you can only sell 1,000, you\'ll have excess inventory tying up cash.' },
-      { type: 'heading', text: '$15 Canned Cocktail Example' },
-      { type: 'body', text: '• Typical co-packer MOQ: 5,000–10,000 cans\n• At 10,000 cans × $3.00 COGS = $30,000 upfront\n• Revenue at wholesale ($7.50): $75,000 when sold\n→ Net on first run: $45,000\n\nUnderstanding MOQ helps you plan cash needs and negotiate better terms as you scale.' },
+      { type: 'body', text: 'MOQ is the smallest production run a co-packer will accept. Setup costs — filling lines, labeling — apply regardless of batch size.' },
+      { type: 'body', text: 'Typical beverage MOQ: 5,000–10,000 units. Pre-orders help you fund and justify hitting MOQ.' },
     ],
   },
 ];
 
-// ─── Category price ranges ───────────────────────────────────────────────────
+// ─── Category price ranges ────────────────────────────────────────────────────
 const CATEGORIES = [
   { value: 'canned-cocktail', label: 'Canned Cocktail', range: '$3.50–$5.50 / can', color: 'text-orange-600 bg-orange-50 border-orange-200' },
   { value: 'spirit', label: 'Spirit', range: '$35–$65 / bottle', color: 'text-purple-600 bg-purple-50 border-purple-200' },
@@ -165,10 +187,11 @@ const TOOLTIP_MAP = {
   'Sales Channel Split': 'What percentage of your sales come from retail (DTC/online) vs wholesale (stores/distributors).',
 };
 
-// ─── Default inputs ───────────────────────────────────────────────────────────
+// ─── Default inputs ────────────────────────────────────────────────────────────
 const DEFAULT_INPUTS = {
   productName: '',
   category: 'canned-cocktail',
+  categoryAutoDetected: false,
   ingredients: '',
   packaging: '',
   coPacking: '',
@@ -186,11 +209,10 @@ const DEFAULT_INPUTS = {
   unitSlider: 500,
 };
 
-// ─── Tooltip component ────────────────────────────────────────────────────────
+// ─── Tooltip component ─────────────────────────────────────────────────────────
 function Tooltip({ term, definition, children }) {
   const [visible, setVisible] = useState(false);
   const spanRef = useRef(null);
-
   return (
     <span className="relative inline-block">
       <span
@@ -221,7 +243,7 @@ function Tooltip({ term, definition, children }) {
   );
 }
 
-// ─── Term card (education) ────────────────────────────────────────────────────
+// ─── Term card (education) ─────────────────────────────────────────────────────
 function TermCard({ term, isActive, onClick }) {
   return (
     <button
@@ -243,8 +265,8 @@ function TermCard({ term, isActive, onClick }) {
   );
 }
 
-// ─── Term expanded panel ──────────────────────────────────────────────────────
-function TermExpanded({ term, onClose }) {
+// ─── Term expanded panel ───────────────────────────────────────────────────────
+function TermExpanded({ term, productLabel, onClose }) {
   if (!term) return null;
   return (
     <div className="mt-4 bg-card border border-accent/20 rounded-2xl p-6 relative animate-fade-in shadow-sm">
@@ -260,26 +282,22 @@ function TermExpanded({ term, onClose }) {
         <h3 className="font-display text-xl text-text-primary">{term.term}</h3>
       </div>
       <div className="space-y-2 max-w-2xl">
-        {term.fullExplanation.map((block, i) => {
-          if (block.type === 'heading') {
-            return (
-              <p key={i} className="font-semibold text-text-primary mt-4 mb-1 text-sm uppercase tracking-wide">
-                {block.text}
-              </p>
-            );
-          }
-          return (
-            <p key={i} className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
-              {block.text}
-            </p>
-          );
-        })}
+        {term.fullExplanation.map((block, i) => (
+          <p key={i} className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
+            {block.text}
+          </p>
+        ))}
+        {productLabel && (
+          <p className="text-xs text-text-secondary italic mt-3 pt-3 border-t border-border">
+            Example above uses your product type: <strong className="text-text-primary">{productLabel}</strong>
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── Cost input row ───────────────────────────────────────────────────────────
+// ─── Cost input row ────────────────────────────────────────────────────────────
 function CostInput({ label, value, onChange, placeholder = '0.00' }) {
   return (
     <div className="flex items-center gap-3">
@@ -300,7 +318,7 @@ function CostInput({ label, value, onChange, placeholder = '0.00' }) {
   );
 }
 
-// ─── Metric row ───────────────────────────────────────────────────────────────
+// ─── Metric row ────────────────────────────────────────────────────────────────
 function MetricRow({ label, value, sub, muted, emphasis }) {
   return (
     <div className={`flex items-start justify-between py-1.5 gap-2 ${emphasis ? 'font-semibold' : ''}`}>
@@ -313,11 +331,10 @@ function MetricRow({ label, value, sub, muted, emphasis }) {
   );
 }
 
-// ─── Motivation bar chart ─────────────────────────────────────────────────────
+// ─── Motivation bar chart ──────────────────────────────────────────────────────
 function MotivationChart({ data }) {
   const maxAbs = Math.max(...data.map(d => Math.abs(d.profit)), 1);
-  const BAR_MAX_H = 96; // px — max bar height
-
+  const BAR_MAX_H = 96;
   return (
     <div>
       <div className="flex items-end gap-2 h-28">
@@ -328,7 +345,6 @@ function MotivationChart({ data }) {
             Math.abs(d.profit) >= 1000
               ? `${d.profit >= 0 ? '+' : '-'}$${(Math.abs(d.profit) / 1000).toFixed(1)}K`
               : `${d.profit >= 0 ? '+' : ''}$${Math.round(d.profit)}`;
-
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <span className={`text-[10px] font-semibold text-center leading-tight ${isPos ? 'text-success' : 'text-danger'}`}>
@@ -348,36 +364,145 @@ function MotivationChart({ data }) {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Total Launch Costs card ───────────────────────────────────────────────────
+function TotalLaunchCostsCard({ brandCtx }) {
+  const { costBreakdown, marketingBatches, preorderPlatform, productionChecklist } = brandCtx;
+
+  const fmtCAD = (n) => n?.toLocaleString('en-CA') ?? '—';
+
+  // Estimate marketing tool cost: $30–$80/mo if batches generated
+  const mktLow = marketingBatches > 0 ? 30 : 0;
+  const mktHigh = marketingBatches > 0 ? 80 : 0;
+
+  // Pre-order platform: Shopify ~$1/mo trial + fees; Stripe free + %; others vary
+  const preorderLabel = preorderPlatform
+    ? `Pre-order platform (${preorderPlatform.charAt(0).toUpperCase() + preorderPlatform.slice(1)})`
+    : null;
+  const preorderLow = preorderPlatform === 'shopify' ? 1 : preorderPlatform ? 0 : 0;
+  const preorderHigh = preorderPlatform === 'shopify' ? 39 : preorderPlatform ? 20 : 0;
+
+  // Production: check if any checklist items done
+  const prodItems = productionChecklist ? Object.values(productionChecklist).filter(Boolean).length : 0;
+
+  const hasAnyData = costBreakdown || marketingBatches > 0 || preorderPlatform || prodItems > 0;
+
+  const totalLow = (costBreakdown?.total?.low || 0) + mktLow + preorderLow;
+  const totalHigh = (costBreakdown?.total?.high || 0) + mktHigh + preorderHigh;
+
+  return (
+    <div className="bg-card rounded-2xl border border-border p-6 mb-8">
+      <h3 className="font-display text-lg text-text-primary mb-1">💼 Your Total Launch Costs</h3>
+      <p className="text-xs text-text-secondary mb-5">Aggregated from your completed sections.</p>
+
+      {!hasAnyData ? (
+        <p className="text-sm text-text-secondary">
+          Complete Financing and other sections first — your aggregated costs will appear here.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {costBreakdown ? (
+            <div className="flex justify-between text-sm">
+              <span className="text-text-secondary">Startup costs (from Financing)</span>
+              <span className="text-text-primary font-medium">
+                ${fmtCAD(costBreakdown.total?.low)} – ${fmtCAD(costBreakdown.total?.high)}
+              </span>
+            </div>
+          ) : (
+            <div className="flex justify-between text-sm">
+              <span className="text-text-secondary">Startup costs (Financing)</span>
+              <span className="text-text-secondary italic text-xs">Complete Financing to see</span>
+            </div>
+          )}
+
+          {marketingBatches > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-text-secondary">Marketing tools (est. monthly)</span>
+              <span className="text-text-primary font-medium">${mktLow} – ${mktHigh}/mo</span>
+            </div>
+          )}
+
+          {preorderLabel && (
+            <div className="flex justify-between text-sm">
+              <span className="text-text-secondary">{preorderLabel}</span>
+              <span className="text-text-primary font-medium">
+                {preorderLow === 0 && preorderHigh === 0 ? 'Fee-based (no fixed cost)' : `$${preorderLow} – $${preorderHigh}/mo`}
+              </span>
+            </div>
+          )}
+
+          {prodItems > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-text-secondary">Production prep ({prodItems} checklist items done)</span>
+              <span className="text-text-secondary italic text-xs">Costs in Financing breakdown</span>
+            </div>
+          )}
+
+          {(totalLow > 0 || totalHigh > 0) && (
+            <div className="border-t border-border pt-3 mt-3 flex justify-between items-baseline">
+              <span className="text-text-primary font-medium">Estimated Total</span>
+              <span className="text-accent font-bold text-lg">
+                ${fmtCAD(totalLow)} – ${fmtCAD(totalHigh)}
+              </span>
+            </div>
+          )}
+
+          {costBreakdown?.minimum_viable && (
+            <p className="text-xs text-text-secondary mt-2 pt-2 border-t border-border/50 leading-relaxed">
+              💡 {costBreakdown.minimum_viable}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────────────────
 export function PricingCalculator() {
   const [activeCard, setActiveCard] = useState(null);
   const [saved, setSaved] = useState(false);
+
+  // Load brand context on mount
+  const brandCtx = useMemo(() => getBrandContext(), []);
+
   const [inputs, setInputs] = useState(() => {
     const stored = getStorage();
     const savedInputs = stored.pricing?.inputs ?? {};
-    return { ...DEFAULT_INPUTS, ...savedInputs };
+    const merged = { ...DEFAULT_INPUTS, ...savedInputs };
+
+    // Auto-detect category from brand idea if no category saved or default
+    if (brandCtx.idea && (!savedInputs.category || savedInputs.category === 'canned-cocktail') && !savedInputs.categoryAutoDetected) {
+      const detected = detectCategory(brandCtx.idea + ' ' + brandCtx.feedback);
+      if (detected) {
+        merged.category = detected;
+        merged.categoryAutoDetected = true;
+      }
+    }
+
+    // Pre-populate product name from brand name if empty
+    if (!merged.productName && brandCtx.brandName) {
+      merged.productName = brandCtx.brandName;
+    }
+
+    return merged;
   });
 
   // Input change handler — auto-suggest wholesale at 50% of retail
   const handleInputChange = useCallback((field, value) => {
     setInputs(prev => {
       const next = { ...prev, [field]: value };
+      if (field === 'category') {
+        next.categoryAutoDetected = false; // manual override
+      }
       if (field === 'retailPrice') {
         const retail = parseFloat(value);
-        if (!isNaN(retail) && retail > 0 && prev.wholesaleAutoSet !== false) {
+        if (!isNaN(retail) && retail > 0 && (!prev.wholesalePrice || prev.wholesaleAutoSet)) {
           next.wholesalePrice = (retail * 0.5).toFixed(2);
           next.wholesaleAutoSet = true;
         }
-        // If user hadn't previously set wholesale manually, auto-fill
-        if (!prev.wholesalePrice || prev.wholesaleAutoSet) {
-          if (!isNaN(retail) && retail > 0) {
-            next.wholesalePrice = (retail * 0.5).toFixed(2);
-            next.wholesaleAutoSet = true;
-          }
-        }
       }
       if (field === 'wholesalePrice') {
-        next.wholesaleAutoSet = false; // user manually changed wholesale
+        next.wholesaleAutoSet = false;
       }
       return next;
     });
@@ -394,10 +519,9 @@ export function PricingCalculator() {
     }
   }, [inputs.retailPrice]);
 
-  // ─── Calculations ────────────────────────────────────────────────────────
+  // ─── Calculations ──────────────────────────────────────────────────────────
   const calc = useMemo(() => {
     const n = v => parseFloat(v) || 0;
-
     const cogs = n(inputs.ingredients) + n(inputs.packaging) + n(inputs.coPacking) + n(inputs.shippingPerUnit) + n(inputs.otherUnit);
     const retailPrice = n(inputs.retailPrice);
     const wholesalePrice = n(inputs.wholesalePrice);
@@ -440,7 +564,7 @@ export function PricingCalculator() {
     };
   }, [inputs]);
 
-  // Auto-persist outputs
+  // Auto-persist
   useEffect(() => {
     const timer = setTimeout(() => {
       updateStorage(prev => ({
@@ -477,23 +601,49 @@ export function PricingCalculator() {
   const fmtCAD = (n, dec = 0) =>
     n.toLocaleString('en-CA', { minimumFractionDigits: dec, maximumFractionDigits: dec });
 
+  // Personalized comparables
+  const competitors = useMemo(() => parseCompetitors(brandCtx.feedback), [brandCtx.feedback]);
+  const categoryLabel = CATEGORIES.find(c => c.value === inputs.category)?.label || 'your category';
+  const comparableText = competitors.length > 0
+    ? `Based on your concept, comparable brands like ${competitors.join(', ')} sell for ${selectedCategory?.range || 'varies'}`
+    : selectedCategory
+    ? `For ${categoryLabel} brands, typical retail range is ${selectedCategory.range}`
+    : null;
+
+  // Product label for term card examples
+  const productLabel = brandCtx.idea
+    ? (CATEGORIES.find(c => c.value === inputs.category)?.label || 'beverage')
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 md:px-6">
       {/* Header */}
-      <div className="mb-10 flex items-start gap-4">
+      <div className="mb-8 flex items-start gap-4">
         <span className="text-5xl mt-1">🧮</span>
         <div>
           <h1 className="font-display text-3xl text-text-primary">Pricing Calculator</h1>
-          <p className="text-text-secondary mt-1">Master your numbers. Price with confidence. All figures in CAD $.</p>
+          <p className="text-text-secondary mt-1">Your numbers, all in one place. All figures in CAD $.</p>
         </div>
       </div>
 
-      {/* ── PART 1: Education ─────────────────────────────────────────────── */}
+      {/* Brainstorm nudge */}
+      {!brandCtx.hasBrainstorm && (
+        <div className="mb-8 bg-warning/10 border border-warning/30 rounded-2xl p-4 text-sm text-text-secondary flex items-start gap-3">
+          <span className="text-warning text-lg flex-shrink-0">💡</span>
+          <p>
+            Complete <strong className="text-text-primary">Brainstorm</strong> first to unlock personalized comparables, auto-detected category, and customized examples here.
+          </p>
+        </div>
+      )}
+
+      {/* ── Total Launch Costs card ────────────────────────────────────────────── */}
+      <TotalLaunchCostsCard brandCtx={brandCtx} />
+
+      {/* ── PART 1: Education ─────────────────────────────────────────────────── */}
       <section className="mb-14">
         <h2 className="font-display text-2xl text-text-primary mb-1">📚 Financial Terms</h2>
-        <p className="text-text-secondary text-sm mb-6">Click any card to learn more with a real beverage example.</p>
+        <p className="text-text-secondary text-sm mb-6">Click any card to learn more.</p>
 
-        {/* Horizontal scroll row */}
         <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:-mx-6 md:px-6">
           {TERMS.map(t => (
             <TermCard
@@ -505,21 +655,21 @@ export function PricingCalculator() {
           ))}
         </div>
 
-        {/* Expanded explanation */}
         {activeCard && (
           <TermExpanded
             term={TERMS.find(t => t.id === activeCard)}
+            productLabel={productLabel}
             onClose={() => setActiveCard(null)}
           />
         )}
       </section>
 
-      {/* ── PART 2: Calculator ────────────────────────────────────────────── */}
+      {/* ── PART 2: Calculator ────────────────────────────────────────────────── */}
       <section>
         <h2 className="font-display text-2xl text-text-primary mb-6">🧮 Interactive Calculator</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* ── LEFT COLUMN: INPUTS ─────────────────────────────────────── */}
+          {/* ── LEFT COLUMN: INPUTS ─────────────────────────────────────────── */}
           <div className="space-y-5">
             {/* Product Info */}
             <div className="bg-card border border-border rounded-2xl p-5">
@@ -536,7 +686,12 @@ export function PricingCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-text-secondary mb-1">Category</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm text-text-secondary">Category</label>
+                    {inputs.categoryAutoDetected && (
+                      <span className="text-xs text-accent font-medium">✓ auto-detected from your idea</span>
+                    )}
+                  </div>
                   <select
                     value={inputs.category}
                     onChange={e => handleInputChange('category', e.target.value)}
@@ -547,12 +702,14 @@ export function PricingCalculator() {
                     ))}
                   </select>
                 </div>
+
+                {/* Personalized comparables */}
                 {selectedCategory && (
                   <div className={`border rounded-xl p-4 ${selectedCategory.color}`}>
                     <p className="text-xs font-semibold uppercase tracking-wide opacity-70 mb-1">
-                      Typical {selectedCategory.label} retail price (CAD)
+                      Comparable brands · CAD
                     </p>
-                    <p className="text-xl font-bold">{selectedCategory.range}</p>
+                    <p className="text-base font-bold leading-snug">{comparableText}</p>
                     <p className="text-xs opacity-60 mt-1">Canadian market · single unit</p>
                   </div>
                 )}
@@ -561,9 +718,7 @@ export function PricingCalculator() {
 
             {/* Per-Unit Costs */}
             <div className="bg-card border border-border rounded-2xl p-5">
-              <h3 className="font-semibold text-text-primary mb-1">
-                Per-Unit Costs
-              </h3>
+              <h3 className="font-semibold text-text-primary mb-1">Per-Unit Costs</h3>
               <p className="text-xs text-text-secondary mb-4">
                 <Tooltip term="COGS" definition={TOOLTIP_MAP['COGS']}>COGS</Tooltip>
                 {' '}= sum of all fields below
@@ -650,7 +805,6 @@ export function PricingCalculator() {
                   )}
                 </div>
 
-                {/* Retail / Wholesale split slider */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-sm text-text-secondary">
@@ -678,7 +832,7 @@ export function PricingCalculator() {
             </div>
           </div>
 
-          {/* ── RIGHT COLUMN: OUTPUT CARDS ──────────────────────────────── */}
+          {/* ── RIGHT COLUMN: OUTPUT CARDS ──────────────────────────────────── */}
           <div className="space-y-5">
             {/* Card 1: Per Unit Breakdown */}
             <div className="bg-card border border-border rounded-2xl p-5">
@@ -838,7 +992,7 @@ export function PricingCalculator() {
                 <span className="text-lg">🌟</span> Motivation Corner
               </h3>
               <p className="text-xs text-text-secondary mb-4">
-                See what <Tooltip term="Net Profit" definition={TOOLTIP_MAP['Net Profit']}>net profit</Tooltip> looks like at different volumes.
+                <Tooltip term="Net Profit" definition={TOOLTIP_MAP['Net Profit']}>Net profit</Tooltip> at different monthly volumes.
               </p>
               <MotivationChart data={calc.motivationData} />
             </div>
