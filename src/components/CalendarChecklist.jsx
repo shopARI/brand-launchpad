@@ -72,21 +72,31 @@ function buildTaskId(dateStr, taskIndex) {
 
 function buildSystemPrompt(startDate) {
   const storage = getStorage();
-  const { brainstorm, pricing, branding, marketing, preorder, production, user } = storage;
+  const { brainstorm, pricing, branding, marketing, preorder, production, user, financing } = storage;
 
   const contextParts = [];
 
   if (user?.brandIdea || brainstorm?.currentIdea) {
     contextParts.push(`Brand Idea: ${user?.brandIdea || brainstorm?.currentIdea}`);
   }
+  if (brainstorm?.feedback) {
+    // Summarize first 200 chars of feedback (category, competitors)
+    contextParts.push(`Brainstorm feedback summary: ${brainstorm.feedback.slice(0, 200).replace(/\n/g, ' ')}…`);
+  }
   if (brainstorm?.ideas?.length) {
     contextParts.push(`Brand Concepts Explored: ${brainstorm.ideas.length} ideas saved`);
   }
   if (pricing?.inputs?.productName) {
-    contextParts.push(`Product: ${pricing.inputs.productName}, Price point: $${pricing.inputs.salePrice || 'TBD'}`);
+    contextParts.push(`Product: ${pricing.inputs.productName}, Retail price: $${pricing.inputs.retailPrice || 'TBD'}, Category: ${pricing.inputs.category || 'TBD'}`);
   }
-  if (pricing?.outputs?.unitEconomics) {
-    contextParts.push(`Unit Economics: calculated and saved`);
+  if (pricing?.outputs?.breakEvenUnits) {
+    contextParts.push(`Break-even: ${pricing.outputs.breakEvenUnits} units/month`);
+  }
+  if (financing?.costBreakdown) {
+    const cb = financing.costBreakdown;
+    contextParts.push(`Startup cost estimate: $${cb.total?.low?.toLocaleString()} – $${cb.total?.high?.toLocaleString()} CAD`);
+    if (cb.minimum_viable) contextParts.push(`Minimum viable launch: ${cb.minimum_viable}`);
+    if (cb.timeline_to_revenue) contextParts.push(`Timeline to revenue: ${cb.timeline_to_revenue}`);
   }
   if (branding?.name) {
     contextParts.push(`Brand Name: ${branding.name}`);
@@ -804,17 +814,15 @@ export function CalendarChecklist({ onNavigate }) {
     <div className="max-w-3xl mx-auto py-10 px-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="font-display text-4xl text-text-primary mb-2">📅 Calendar & Checklist</h1>
-        <p className="text-text-secondary text-lg">
-          Generate your AI-powered day-by-day launch roadmap. All your saved data from every module feeds into a personalized plan.
-        </p>
+        <h1 className="font-display text-3xl text-text-primary mb-1">📅 Launch Roadmap</h1>
+        <p className="text-text-secondary text-sm">Your AI-powered day-by-day plan, built from all your saved data.</p>
       </div>
 
       {/* Start Date + Generate */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
         <div>
           <label className="block text-sm font-semibold text-text-primary mb-2">
-            When do you want to start?
+            Start date
           </label>
           <input
             type="date"
@@ -822,9 +830,7 @@ export function CalendarChecklist({ onNavigate }) {
             onChange={handleDateChange}
             className="w-full max-w-xs border border-border rounded-xl px-4 py-2.5 text-sm text-text-primary bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
-          <p className="text-xs text-text-secondary mt-1.5">
-            Your roadmap will start on {formatDateDisplay(startDate)} (weekdays only)
-          </p>
+          <p className="text-xs text-text-secondary mt-1.5">Starts {formatDateDisplay(startDate)} — weekdays only</p>
         </div>
 
         {!hasRoadmap ? (
@@ -856,7 +862,7 @@ export function CalendarChecklist({ onNavigate }) {
               <div className="flex items-center gap-3 p-3 bg-warning/10 border border-warning/30 rounded-xl text-sm">
                 <span className="text-warning">⚠️</span>
                 <span className="text-text-secondary">
-                  This will replace your current calendar. {completedCount > 0 && `Your ${completedCount} completed task${completedCount !== 1 ? 's' : ''} will be preserved.`}
+                  This replaces your current roadmap. {completedCount > 0 && `${completedCount} completed task${completedCount !== 1 ? 's' : ''} will be preserved.`}
                 </span>
                 <button
                   onClick={() => generateRoadmap(true)}
@@ -955,10 +961,8 @@ export function CalendarChecklist({ onNavigate }) {
       {!hasRoadmap && !loading && (
         <div className="text-center py-12 text-text-secondary">
           <div className="text-5xl mb-4">🗺️</div>
-          <p className="text-lg font-medium text-text-primary mb-2">No roadmap yet</p>
-          <p className="text-sm">
-            Set your start date and click "Generate My Roadmap" to create your personalized 10-week launch plan.
-          </p>
+          <p className="font-medium text-text-primary mb-2">No roadmap yet</p>
+          <p className="text-sm">Set your start date and generate your personalized launch plan.</p>
         </div>
       )}
 
