@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/brand-launchpad/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Brand Launchpad — Launch Your Beverage Brand</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,6 +11,22 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // GitHub Pages SPA routing: restore path from ?redirect param
+      (function() {
+        var redirect = new URLSearchParams(window.location.search).get('redirect');
+        if (redirect) {
+          var decoded = decodeURIComponent(redirect);
+          var hashIdx = decoded.indexOf('#');
+          var hash = hashIdx >= 0 ? decoded.slice(hashIdx) : '';
+          var pathAndQuery = hashIdx >= 0 ? decoded.slice(0, hashIdx) : decoded;
+          var queryIdx = pathAndQuery.indexOf('&');
+          var path = queryIdx >= 0 ? '/' + pathAndQuery.slice(0, queryIdx) : '/' + pathAndQuery;
+          var query = queryIdx >= 0 ? '?' + pathAndQuery.slice(queryIdx + 1) : '';
+          window.history.replaceState(null, null, path + query + hash);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
