@@ -29,3 +29,16 @@
     display: none;
   }
 }
+
+/* BEGIN!!!! popup bounce animation */
+@keyframes beginBounceIn {
+  0%   { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+  40%  { transform: scale(1.15) rotate(2deg); opacity: 1; }
+  60%  { transform: scale(0.92) rotate(-1deg); }
+  80%  { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.begin-bounce {
+  animation: beginBounceIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
