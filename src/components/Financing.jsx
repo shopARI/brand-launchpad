@@ -13,7 +13,7 @@ import {
 import { useAI } from '../hooks/useAI';
 import { getStorage, updateStorage } from '../utils/storage';
 
-// ─── Seed Data ────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 Seed Data \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 const SEED_GRANTS = [
   {
@@ -23,7 +23,7 @@ const SEED_GRANTS = [
     amount: 'Up to $60,000',
     deadline: null,
     deadlineLabel: 'Year-round',
-    eligibility: 'Ages 18–39, Canadian resident, operating full-time',
+    eligibility: 'Ages 18\u201339, Canadian resident, operating full-time',
     status: 'open',
     link: 'https://www.futurpreneur.ca/',
   },
@@ -53,7 +53,7 @@ const SEED_GRANTS = [
     id: 'seed-4',
     name: 'BDC Women in Tech Venture Fund',
     provider: 'BDC Capital',
-    amount: '$50K – $5M',
+    amount: '$50K \u2013 $5M',
     deadline: null,
     deadlineLabel: 'Ongoing',
     eligibility: 'Women-led startups with an innovation or technology component',
@@ -106,7 +106,7 @@ const SEED_GRANTS = [
   },
   {
     id: 'seed-9',
-    name: 'IRAP — Industrial Research Assistance Program',
+    name: 'IRAP \u2014 Industrial Research Assistance Program',
     provider: 'National Research Council Canada (NRC)',
     amount: 'Up to $10,000,000',
     deadline: null,
@@ -119,49 +119,49 @@ const SEED_GRANTS = [
     id: 'seed-10',
     name: 'Provincial Microgrant Programs',
     provider: 'Various Provincial Governments',
-    amount: '$1,000 – $10,000',
+    amount: '$1,000 \u2013 $10,000',
     deadline: null,
     deadlineLabel: 'Varies by province',
-    eligibility: 'Varies by province — search your provincial government or CFDC portal',
+    eligibility: 'Varies by province \u2014 search your provincial government or CFDC portal',
     status: 'unknown',
     link: 'https://www.canada.ca/en/services/business/grants.html',
   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 const STATUS_CONFIG = {
   open: {
     label: 'Open',
-    emoji: '🟢',
+    emoji: '\ud83d\udfe2',
     bg: 'bg-success/10',
     text: 'text-success',
     border: 'border-success/20',
   },
   'closing-soon': {
     label: 'Closing Soon',
-    emoji: '🟡',
+    emoji: '\ud83d\udfe1',
     bg: 'bg-warning/10',
     text: 'text-warning',
     border: 'border-warning/20',
   },
   closed: {
     label: 'Closed',
-    emoji: '🔴',
+    emoji: '\ud83d\udd34',
     bg: 'bg-danger/10',
     text: 'text-danger',
     border: 'border-danger/20',
   },
   unknown: {
     label: 'Unknown',
-    emoji: '⚪',
+    emoji: '\u26aa',
     bg: 'bg-border/50',
     text: 'text-text-secondary',
     border: 'border-border',
   },
   check: {
     label: 'Unknown',
-    emoji: '⚪',
+    emoji: '\u26aa',
     bg: 'bg-border/50',
     text: 'text-text-secondary',
     border: 'border-border',
@@ -181,7 +181,7 @@ function StatusPill({ status }) {
 
 function DeadlineCell({ deadline, label }) {
   if (!deadline) {
-    return <span className="text-text-secondary text-sm">{label || '—'}</span>;
+    return <span className="text-text-secondary text-sm">{label || '\u2014'}</span>;
   }
 
   const today = new Date();
@@ -199,18 +199,14 @@ function DeadlineCell({ deadline, label }) {
   );
 }
 
-// ─── AI Grant Finder ──────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 AI Grant Finder \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function buildGrantSystemPrompt(brandIdea) {
   const brandContext = brandIdea
     ? `starting a specific brand: ${brandIdea}`
     : 'starting a beverage/CPG company';
 
-  return `You are a Canadian small business funding expert. Search your knowledge for ALL grants, loans, micro-loans, pitch competitions, accelerators, and funding programs available to a 24-year-old solo female founder in Canada with income under $30K, ${brandContext}.
-
-Return results as a JSON array with fields: name, provider, amount_range, deadline_info, eligibility_summary, application_url (if known, else "Search required"), status ("open"/"check"/"unknown").
-
-Be exhaustive. Include federal, provincial (all provinces), municipal, private foundation, and competition-based funding. Minimum 15 results. Return ONLY the JSON array, no other text.`;
+  return `You are a Canadian small business funding expert. Search your knowledge for ALL grants, loans, micro-loans, pitch competitions, accelerators, and funding programs available to a 24-year-old solo female founder in Canada with income under $30K, ${brandContext}.\n\nReturn results as a JSON array with fields: name, provider, amount_range, deadline_info, eligibility_summary, application_url (if known, else "Search required"), status ("open"/"check"/"unknown").\n\nBe exhaustive. Include federal, provincial (all provinces), municipal, private foundation, and competition-based funding. Minimum 15 results. Return ONLY the JSON array, no other text.`;
 }
 
 function parseGrantsFromAI(text) {
@@ -228,11 +224,11 @@ function normalizeAIGrant(raw, index) {
   return {
     id: `ai-${Date.now()}-${index}`,
     name: raw.name || 'Unknown Program',
-    provider: raw.provider || '—',
-    amount: raw.amount_range || '—',
+    provider: raw.provider || '\u2014',
+    amount: raw.amount_range || '\u2014',
     deadline: null,
-    deadlineLabel: raw.deadline_info || '—',
-    eligibility: raw.eligibility_summary || '—',
+    deadlineLabel: raw.deadline_info || '\u2014',
+    eligibility: raw.eligibility_summary || '\u2014',
     status:
       raw.status === 'open' || raw.status === 'check' || raw.status === 'unknown'
         ? raw.status
@@ -277,7 +273,7 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">✨</span>
+            <span className="text-2xl">\u2728</span>
             <div>
               <h2 className="font-display text-xl text-text-primary">AI Grant Finder</h2>
               <p className="text-sm text-text-secondary mt-0.5">
@@ -299,7 +295,7 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
         <div className="flex-1 overflow-y-auto p-6">
           {!searched && !loading && !error && (
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">🔍</div>
+              <div className="text-5xl mb-4">\ud83d\udd0d</div>
               <h3 className="font-display text-lg text-text-primary mb-2">
                 Find More Canadian Grants
               </h3>
@@ -327,7 +323,7 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
             <div className="flex flex-col items-center justify-center py-12 gap-4">
               <Loader2 size={40} className="animate-spin text-accent" />
               <p className="text-text-secondary text-sm">
-                Searching for grants… this may take 15–30 seconds
+                Searching for grants\u2026 this may take 15\u201330 seconds
               </p>
             </div>
           )}
@@ -355,9 +351,9 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
 
           {searched && !loading && parsed.length === 0 && !error && (
             <div className="text-center py-6">
-              <div className="text-4xl mb-3">✅</div>
+              <div className="text-4xl mb-3">\u2705</div>
               <p className="text-text-secondary">
-                No new grants found — all results are already in your table.
+                No new grants found \u2014 all results are already in your table.
               </p>
             </div>
           )}
@@ -389,14 +385,14 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-xs">
                       <span className="font-semibold text-accent">{g.amount}</span>
-                      {g.deadlineLabel && g.deadlineLabel !== '—' && (
+                      {g.deadlineLabel && g.deadlineLabel !== '\u2014' && (
                         <>
-                          <span className="text-border">·</span>
+                          <span className="text-border">\u00b7</span>
                           <span className="text-text-secondary">{g.deadlineLabel}</span>
                         </>
                       )}
                     </div>
-                    {g.eligibility && g.eligibility !== '—' && (
+                    {g.eligibility && g.eligibility !== '\u2014' && (
                       <p className="text-xs text-text-secondary mt-1.5 line-clamp-2">
                         {g.eligibility}
                       </p>
@@ -431,23 +427,25 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
   );
 }
 
-// ─── Grants Tab ────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 Grants Section (secondary, below cost breakdown) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-function GrantsTab({ grants, onOpenModal }) {
+function GrantsSection({ grants, onOpenModal }) {
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <section className="mt-12 pt-10 border-t border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h2 className="font-display text-2xl text-text-primary">Grants & Funding</h2>
-          <p className="text-text-secondary mt-1 text-sm">
-            Canadian programs for early-stage founders — verify eligibility before applying
+          <h2 className="font-display text-xl text-text-primary">
+            Grants &amp; Funding You Might Qualify For
+          </h2>
+          <p className="text-text-secondary mt-1 text-xs">
+            Canadian programs for early-stage founders \u2014 verify eligibility before applying
           </p>
         </div>
         <button
           onClick={onOpenModal}
-          className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-hover transition-colors shadow-sm whitespace-nowrap self-start sm:self-auto"
+          className="inline-flex items-center gap-2 bg-background border border-border text-text-secondary px-4 py-2 rounded-xl text-sm font-medium hover:bg-card hover:text-text-primary transition-colors whitespace-nowrap self-start sm:self-auto"
         >
-          <Sparkles size={16} />
+          <Sparkles size={15} />
           Find More With AI
         </button>
       </div>
@@ -528,54 +526,63 @@ function GrantsTab({ grants, onOpenModal }) {
       </div>
 
       <p className="text-xs text-text-secondary mt-3 text-center">
-        {grants.length} programs listed ·{' '}
+        {grants.length} programs listed{' '}
         <span className="inline-flex items-center gap-1">
-          🟢 Open · 🟡 Closing Soon · 🔴 Closed · ⚪ Unknown
+          \u00b7 \ud83d\udfe2 Open \u00b7 \ud83d\udfe1 Closing Soon \u00b7 \ud83d\udd34 Closed \u00b7 \u26aa Unknown
         </span>{' '}
-        · Always verify eligibility directly with the program provider
+        \u00b7 Always verify eligibility directly with the program provider
       </p>
-    </div>
+    </section>
   );
 }
 
-// ─── Cost Breakdown Tab ────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 Cost Breakdown \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function buildCostSystemPrompt(brandIdea, feedback) {
   const context = [brandIdea, feedback ? `Additional context: ${feedback}` : '']
     .filter(Boolean)
     .join('\n');
 
-  return `You are a Canadian beverage industry financial advisor. The user is a 24-year-old solo female founder in Canada with income under $30K, planning to bootstrap with pre-orders before production.
+  return `You are a Canadian beverage industry financial advisor. The user is a solo founder in Canada planning to bootstrap with pre-orders.
 
 Their brand concept:
 ${context}
 
-Generate a detailed cost breakdown for launching this SPECIFIC brand via the bootstrap/pre-order path (validate demand → raise capital → produce). Return ONLY valid JSON in this exact structure:
+Generate a cost breakdown distinguishing DIY (things a solo founder does herself for free) vs Paid (unavoidable real costs). Return ONLY valid JSON in this exact structure:
 
 {
   "categories": [
     {
-      "name": "Legal & Registration",
+      "name": "Branding & Design",
+      "type": "diy",
+      "diyNote": "You can do this yourself with Canva and free tools",
       "items": [
-        { "item": "Business registration", "low": 60, "mid": 200, "high": 350, "note": "Federal incorporation vs sole proprietorship" }
+        { "item": "Logo design", "diyCost": 0, "hireCost": { "low": 200, "high": 800 }, "note": "Canva has free logo templates" }
+      ]
+    },
+    {
+      "name": "Initial Production",
+      "type": "paid",
+      "items": [
+        { "item": "Co-packer minimum order", "low": 2000, "high": 10000, "note": "Typical MOQ for small batch canning" }
       ]
     }
   ],
-  "total": { "low": 0, "mid": 0, "high": 0 },
-  "minimum_viable": "You can validate demand for as little as $X with just [specific items]",
-  "timeline_to_revenue": "X–Y months from start to first pre-order revenue"
+  "totalPaid": { "low": 0, "high": 0 },
+  "totalWithHiring": { "low": 0, "high": 0 },
+  "minimum_viable": "You can validate demand for as little as $X with just...",
+  "timeline_to_revenue": "X-Y months from start to first pre-order revenue"
 }
 
-Required categories (be specific to their product type — a canned cocktail has different costs than a spirit or non-alc):
-1. Legal & Registration (business reg, excise license if alcohol/RTD, provincial requirements for their specific product)
-2. Branding & Design (logo, packaging design — include budget/DIY options)
-3. Digital Presence (domain, hosting, email service, social setup)
-4. Pre-Order Platform (Shopify/Stripe fees, landing page)
-5. Initial Production (co-packer deposit, ingredient sourcing, packaging MOQ — use real Canadian pricing and typical MOQs for their beverage type)
-6. Shipping & Fulfillment (shipping supplies, fulfillment setup)
-7. Marketing & Launch (paid promotion if any, sample costs)
+DIY categories (type: "diy"): branding/logo, social media setup, content creation, photography, website building (Shopify templates), email marketing setup
+Paid categories (type: "paid"): business registration, domain, Shopify subscription, co-packer deposit, ingredients, packaging MOQ, shipping supplies, insurance, excise license (if alcohol/RTD)
 
-Use real Canadian pricing. Each category must have 2–4 line items. The total must equal the sum of all mid estimates. Return ONLY valid JSON, no other text.`;
+Rules:
+- totalPaid = sum of all paid category item ranges
+- totalWithHiring = totalPaid + all DIY hireCost ranges
+- Be specific to their product type and use real Canadian pricing
+- Each category must have 2-4 line items
+- Return ONLY valid JSON, no other text`;
 }
 
 function parseCostBreakdown(text) {
@@ -589,38 +596,28 @@ function parseCostBreakdown(text) {
 }
 
 function formatCAD(num) {
-  if (typeof num !== 'number') return '—';
+  if (typeof num !== 'number') return '\u2014';
   return `$${num.toLocaleString('en-CA')}`;
 }
 
-function CostCategoryCard({ category, isExpanded, onToggle }) {
-  const catTotal = category.items.reduce(
-    (acc, item) => ({
-      low: acc.low + (item.low || 0),
-      mid: acc.mid + (item.mid || 0),
-      high: acc.high + (item.high || 0),
-    }),
-    { low: 0, mid: 0, high: 0 },
-  );
+// DIY category card \u2014 muted, $0 hero, hire cost secondary
+function DIYCategoryCard({ category }) {
+  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <div className="bg-background border border-dashed border-border/40 rounded-xl overflow-hidden">
       <button
-        onClick={onToggle}
-        className="w-full text-left px-5 py-4 flex items-center justify-between gap-3 hover:bg-background/50 transition-colors"
+        onClick={() => setIsExpanded((v) => !v)}
+        className="w-full text-left px-5 py-4 flex items-center justify-between gap-3 hover:bg-border/10 transition-colors"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="font-medium text-text-primary text-sm">{category.name}</span>
+        <div className="flex flex-col gap-1.5 min-w-0">
+          <span className="font-medium text-text-secondary text-sm">{category.name}</span>
+          <span className="inline-flex w-fit text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+            \ud83d\ude4b\u200d\u2640\ufe0f You'll likely do this yourself
+          </span>
         </div>
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="hidden sm:flex items-center gap-3 text-xs">
-            <span className="text-text-secondary">{formatCAD(catTotal.low)}</span>
-            <span className="text-text-secondary">–</span>
-            <span className="font-semibold text-accent">{formatCAD(catTotal.mid)}</span>
-            <span className="text-text-secondary">–</span>
-            <span className="text-text-secondary">{formatCAD(catTotal.high)}</span>
-          </div>
-          <span className="text-sm font-semibold text-accent sm:hidden">{formatCAD(catTotal.mid)}</span>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="text-lg font-bold text-text-secondary">$0</span>
           {isExpanded ? (
             <ChevronUp size={16} className="text-text-secondary" />
           ) : (
@@ -630,26 +627,29 @@ function CostCategoryCard({ category, isExpanded, onToggle }) {
       </button>
 
       {isExpanded && (
-        <div className="border-t border-border">
-          {/* Column headers */}
-          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-2 bg-background/40 text-xs font-semibold text-text-secondary uppercase tracking-wide">
-            <span>Item</span>
-            <span className="w-16 text-right">Low</span>
-            <span className="w-16 text-right">Mid</span>
-            <span className="w-16 text-right">High</span>
-          </div>
-          <div className="divide-y divide-border/50">
-            {category.items.map((item, i) => (
-              <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-5 py-3 items-start">
-                <div>
+        <div className="border-t border-dashed border-border/30">
+          {category.diyNote && (
+            <p className="text-xs text-text-secondary px-5 py-2.5 bg-accent/5 italic">
+              \ud83d\udca1 {category.diyNote}
+            </p>
+          )}
+          <div className="divide-y divide-border/20">
+            {(category.items || []).map((item, i) => (
+              <div key={i} className="px-5 py-3 flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
                   <span className="text-sm text-text-primary">{item.item}</span>
                   {item.note && (
                     <p className="text-xs text-text-secondary mt-0.5">{item.note}</p>
                   )}
                 </div>
-                <span className="w-16 text-right text-sm text-text-secondary">{formatCAD(item.low)}</span>
-                <span className="w-16 text-right text-sm font-medium text-text-primary">{formatCAD(item.mid)}</span>
-                <span className="w-16 text-right text-sm text-text-secondary">{formatCAD(item.high)}</span>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-sm font-bold text-text-secondary">$0</div>
+                  {item.hireCost && (
+                    <div className="text-xs text-text-secondary mt-0.5 whitespace-nowrap">
+                      Or hire: {formatCAD(item.hireCost.low)}\u2013{formatCAD(item.hireCost.high)}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -659,7 +659,63 @@ function CostCategoryCard({ category, isExpanded, onToggle }) {
   );
 }
 
-function CostBreakdownTab() {
+// Paid category card \u2014 normal styling, real cost ranges
+function PaidCategoryCard({ category }) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const catTotal = (category.items || []).reduce(
+    (acc, item) => ({
+      low: acc.low + (item.low || 0),
+      high: acc.high + (item.high || 0),
+    }),
+    { low: 0, high: 0 },
+  );
+
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <button
+        onClick={() => setIsExpanded((v) => !v)}
+        className="w-full text-left px-5 py-4 flex items-center justify-between gap-3 hover:bg-background/50 transition-colors"
+      >
+        <span className="font-medium text-text-primary text-sm">{category.name}</span>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="font-semibold text-accent text-sm whitespace-nowrap">
+            {formatCAD(catTotal.low)}\u2013{formatCAD(catTotal.high)}
+          </span>
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-text-secondary" />
+          ) : (
+            <ChevronDown size={16} className="text-text-secondary" />
+          )}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="border-t border-border divide-y divide-border/50">
+          {(category.items || []).map((item, i) => (
+            <div key={i} className="px-5 py-3 flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <span className="text-sm text-text-primary">{item.item}</span>
+                {item.note && (
+                  <p className="text-xs text-text-secondary mt-0.5">{item.note}</p>
+                )}
+              </div>
+              <div className="text-right flex-shrink-0">
+                <span className="text-sm font-medium text-text-primary whitespace-nowrap">
+                  {formatCAD(item.low)}\u2013{formatCAD(item.high)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// \u2500\u2500\u2500 Cost Breakdown Section \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function CostBreakdownSection() {
   const storage = getStorage();
   const brandIdea = storage.brainstorm?.currentIdea || '';
   const feedback = storage.brainstorm?.feedback || '';
@@ -668,12 +724,14 @@ function CostBreakdownTab() {
   const { callAI, loading, error } = useAI();
   const [breakdown, setBreakdown] = useState(savedBreakdown);
   const [parseError, setParseError] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState({});
 
   const handleGenerate = useCallback(async () => {
     setParseError(false);
     const systemPrompt = buildCostSystemPrompt(brandIdea, feedback);
-    const text = await callAI(systemPrompt, 'Generate my personalized cost breakdown for my brand.');
+    const text = await callAI(
+      systemPrompt,
+      'Generate my personalized cost breakdown for my brand.',
+    );
     if (!text) return;
     const parsed = parseCostBreakdown(text);
     if (!parsed) {
@@ -681,11 +739,6 @@ function CostBreakdownTab() {
       return;
     }
     setBreakdown(parsed);
-    // Expand all categories by default
-    const expanded = {};
-    (parsed.categories || []).forEach((_, i) => { expanded[i] = true; });
-    setExpandedCategories(expanded);
-    // Save to localStorage for Pricing Calculator
     updateStorage((s) => ({
       ...s,
       financing: { ...s.financing, costBreakdown: parsed },
@@ -693,65 +746,46 @@ function CostBreakdownTab() {
     }));
   }, [callAI, brandIdea, feedback]);
 
-  const toggleCategory = useCallback((index) => {
-    setExpandedCategories((prev) => ({ ...prev, [index]: !prev[index] }));
-  }, []);
-
-  // No brand idea nudge
+  // No brand idea \u2014 show nudge
   if (!brandIdea) {
     return (
-      <div className="max-w-xl">
-        <h2 className="font-display text-2xl text-text-primary mb-2">Your Cost Breakdown</h2>
-        <div className="bg-background border border-border rounded-2xl p-8 text-center mt-6">
-          <div className="text-4xl mb-3">💡</div>
-          <p className="font-medium text-text-primary mb-1">Complete Brainstorm first</p>
-          <p className="text-sm text-text-secondary">
-            Your cost breakdown is personalized to your specific brand idea. Finish the Brainstorm
-            section so we can generate real numbers for your product.
-          </p>
-        </div>
+      <div className="bg-background border border-border rounded-2xl p-8 text-center">
+        <div className="text-4xl mb-3">\ud83d\udca1</div>
+        <p className="font-medium text-text-primary mb-2">Complete Brainstorm first</p>
+        <p className="text-sm text-text-secondary">
+          Your cost breakdown is personalized to your brand idea. Finish the Brainstorm section so
+          we can generate real numbers for your product.
+        </p>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-2xl">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <h2 className="font-display text-2xl text-text-primary">Your Cost Breakdown</h2>
-          <p className="text-text-secondary mt-1 text-sm">
-            Idea → first revenue via pre-orders, specific to your brand
-          </p>
-        </div>
-        {breakdown && !loading && (
-          <button
-            onClick={handleGenerate}
-            className="inline-flex items-center gap-2 bg-background border border-border text-text-secondary px-3 py-2 rounded-xl text-xs font-medium hover:bg-card hover:text-text-primary transition-colors whitespace-nowrap"
-          >
-            <Sparkles size={13} />
-            Regenerate
-          </button>
-        )}
-      </div>
+  const diyCategories = (breakdown?.categories || []).filter((c) => c.type === 'diy');
+  const paidCategories = (breakdown?.categories || []).filter((c) => c.type === 'paid');
 
-      {/* Brand idea context pill */}
+  return (
+    <div>
+      {/* Brand context pill */}
       <div className="bg-accent/10 border border-accent/20 rounded-xl px-4 py-3 mb-6">
-        <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-1">Based on your brand concept</p>
+        <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-1">
+          Based on your brand concept
+        </p>
         <p className="text-sm text-text-primary line-clamp-2">{brandIdea}</p>
       </div>
 
       {/* Generate button (no breakdown yet) */}
-      {!breakdown && !loading && !error && (
-        <div className="text-center py-8 border border-dashed border-border rounded-2xl">
-          <div className="text-5xl mb-4">📊</div>
+      {!breakdown && !loading && !(error || parseError) && (
+        <div className="text-center py-10 border border-dashed border-border rounded-2xl">
+          <div className="text-5xl mb-4">\ud83d\udcca</div>
           <p className="text-text-secondary text-sm mb-6 max-w-sm mx-auto">
-            AI will generate real cost estimates for your specific product type using Canadian pricing.
+            AI will generate real cost estimates for your specific product type using Canadian
+            pricing \u2014 and show you what you can do yourself vs. what actually costs money.
           </p>
           <button
             onClick={handleGenerate}
-            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-hover transition-colors"
+            className="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-xl font-semibold text-base hover:bg-accent-hover transition-colors shadow-sm"
           >
-            <Sparkles size={18} />
+            <Sparkles size={20} />
             Generate My Cost Breakdown
           </button>
         </div>
@@ -761,7 +795,7 @@ function CostBreakdownTab() {
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 gap-4">
           <Loader2 size={40} className="animate-spin text-accent" />
-          <p className="text-text-secondary text-sm">Building your personalized breakdown…</p>
+          <p className="text-text-secondary text-sm">Building your personalized breakdown\u2026</p>
         </div>
       )}
 
@@ -794,47 +828,93 @@ function CostBreakdownTab() {
       {/* Breakdown display */}
       {breakdown && !loading && (
         <div className="space-y-3">
-          {/* Category cards */}
-          {(breakdown.categories || []).map((category, i) => (
-            <CostCategoryCard
-              key={i}
-              category={category}
-              isExpanded={!!expandedCategories[i]}
-              onToggle={() => toggleCategory(i)}
-            />
-          ))}
+          {/* Regenerate */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleGenerate}
+              className="inline-flex items-center gap-2 bg-background border border-border text-text-secondary px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-card hover:text-text-primary transition-colors"
+            >
+              <Sparkles size={12} />
+              Regenerate
+            </button>
+          </div>
 
-          {/* Total row */}
-          {breakdown.total && (
-            <div className="bg-text-primary text-white rounded-xl px-5 py-4 flex items-center justify-between gap-3">
-              <span className="font-semibold text-sm">Total Estimated Range</span>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="opacity-70">{formatCAD(breakdown.total.low)}</span>
-                <span className="opacity-50">–</span>
-                <span className="font-bold text-base">{formatCAD(breakdown.total.mid)}</span>
-                <span className="opacity-50">–</span>
-                <span className="opacity-70">{formatCAD(breakdown.total.high)}</span>
-              </div>
+          {/* DIY section */}
+          {diyCategories.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide px-1 pt-1">
+                \ud83d\ude4b\u200d\u2640\ufe0f What you'll do yourself (free)
+              </p>
+              {diyCategories.map((cat, i) => (
+                <DIYCategoryCard key={i} category={cat} />
+              ))}
             </div>
           )}
 
-          {/* Bootstrap Reality Check callout */}
+          {/* Paid section */}
+          {paidCategories.length > 0 && (
+            <div className="space-y-2 mt-2">
+              <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide px-1 pt-1">
+                \ud83d\udcb3 What you'll actually spend
+              </p>
+              {paidCategories.map((cat, i) => (
+                <PaidCategoryCard key={i} category={cat} />
+              ))}
+            </div>
+          )}
+
+          {/* Running totals hero */}
+          <div className="rounded-xl overflow-hidden border border-accent/30 mt-4">
+            <div className="bg-accent/5 px-5 py-5 text-center">
+              <p className="text-sm text-text-secondary mb-1 font-medium">
+                What you'll actually spend
+              </p>
+              {breakdown.totalPaid ? (
+                <p className="text-3xl font-bold text-accent">
+                  {formatCAD(breakdown.totalPaid.low)}{' '}
+                  <span className="text-text-secondary text-2xl font-normal">\u2013</span>{' '}
+                  {formatCAD(breakdown.totalPaid.high)}
+                </p>
+              ) : (
+                <p className="text-3xl font-bold text-accent">\u2014</p>
+              )}
+              <p className="text-xs text-text-secondary mt-1">paid items only</p>
+            </div>
+            {breakdown.totalWithHiring && (
+              <div className="bg-background/50 px-5 py-3 text-center border-t border-border/30">
+                <p className="text-xs text-text-secondary">
+                  If you hired out everything:{' '}
+                  <span className="font-semibold text-text-primary">
+                    {formatCAD(breakdown.totalWithHiring.low)}{' '}
+                    \u2013{' '}
+                    {formatCAD(breakdown.totalWithHiring.high)}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Minimum viable callout */}
           {breakdown.minimum_viable && (
             <div className="bg-success/10 border border-success/20 rounded-xl p-5">
-              <p className="font-semibold text-text-primary text-sm mb-1">✅ Bootstrap Reality Check</p>
-              <p className="text-sm text-text-secondary leading-relaxed">{breakdown.minimum_viable}</p>
+              <p className="font-semibold text-text-primary text-sm mb-1">
+                \u2705 Bootstrap Reality Check
+              </p>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                {breakdown.minimum_viable}
+              </p>
             </div>
           )}
 
           {/* Timeline */}
           {breakdown.timeline_to_revenue && (
             <p className="text-xs text-text-secondary text-center pt-1">
-              ⏱ {breakdown.timeline_to_revenue}
+              \u23f1 {breakdown.timeline_to_revenue}
             </p>
           )}
 
           <p className="text-xs text-text-secondary text-center pt-2">
-            Estimates saved — your Pricing Calculator will use these numbers
+            Estimates saved \u2014 your Pricing Calculator will use these numbers
           </p>
         </div>
       )}
@@ -842,17 +922,15 @@ function CostBreakdownTab() {
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500 Main Component \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 export function Financing({ setActiveSection }) {
-  const [activeTab, setActiveTab] = useState('grants');
   const [customGrants, setCustomGrants] = useState(
     () => getStorage().financing?.customGrants || [],
   );
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Read brand idea once (stable — doesn't change within a session)
   const brandIdea = getStorage().brainstorm?.currentIdea || '';
 
   // Mark section as in-progress on first visit
@@ -888,44 +966,21 @@ export function Financing({ setActiveSection }) {
     [customGrants],
   );
 
-  const TABS = [
-    { id: 'grants', label: '💰 Grants & Funding' },
-    { id: 'breakdown', label: '📊 Your Cost Breakdown' },
-  ];
-
   return (
-    <div className="max-w-6xl mx-auto py-8 px-6">
+    <div className="max-w-3xl mx-auto py-8 px-6">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="font-display text-4xl text-text-primary mb-2">Financing</h1>
-        <p className="text-text-secondary">
-          Find funding and see exactly what it costs to launch your brand
+        <h1 className="font-display text-4xl text-text-primary mb-2">Your Launch Costs</h1>
+        <p className="text-text-secondary text-sm">
+          A personalized breakdown based on your brand idea.
         </p>
       </div>
 
-      {/* Tab Bar */}
-      <div className="flex gap-1 bg-background border border-border rounded-xl p-1 mb-8 w-fit">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.id
-                ? 'bg-card text-text-primary shadow-sm'
-                : 'text-text-secondary hover:text-text-primary'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* Cost Breakdown \u2014 main content */}
+      <CostBreakdownSection />
 
-      {/* Tab Content */}
-      {activeTab === 'grants' ? (
-        <GrantsTab grants={allGrants} onOpenModal={() => setShowModal(true)} />
-      ) : (
-        <CostBreakdownTab />
-      )}
+      {/* Grants \u2014 secondary section below */}
+      <GrantsSection grants={allGrants} onOpenModal={() => setShowModal(true)} />
 
       {/* AI Grant Finder Modal */}
       {showModal && (
@@ -944,7 +999,8 @@ export function Financing({ setActiveSection }) {
           {toast}
         </div>
       )}
-    <NextSectionButton
+
+      <NextSectionButton
         nextSection="branding"
         nextLabel="Branding Guide"
         setActiveSection={setActiveSection}
