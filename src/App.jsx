@@ -1,0 +1,131 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Sidebar, MobileMenuButton } from './components/Sidebar';
+import { OnboardingModal } from './components/OnboardingModal';
+import { SettingsModal } from './components/SettingsModal';
+import { getStorage, updateStorage } from './utils/storage';
+import {
+  Brainstorm,
+  Financing,
+  Pricing,
+  Branding,
+  Marketing,
+  PreOrder,
+  Production,
+  Calendar,
+} from './sections';
+
+const SECTION_COMPONENTS = {
+  brainstorm: Brainstorm,
+  financing: Financing,
+  pricing: Pricing,
+  branding: Branding,
+  marketing: Marketing,
+  preorder: PreOrder,
+  production: Production,
+  calendar: Calendar,
+};
+
+function useAppState() {
+  const [storage, setStorage] = useState(() => getStorage());
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [activeSection, setActiveSection] = useState('brainstorm');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Determine if onboarding is needed on mount
+  useEffect(() => {
+    const data = getStorage();
+    if (!data.user.name) {
+      setShowOnboarding(true);
+    }
+    setStorage(data);
+  }, []);
+
+  const handleOnboardingComplete = useCallback((userData) => {
+    setShowOnboarding(false);
+    setStorage(getStorage());
+  }, []);
+
+  const handleSettingsSave = useCallback(() => {
+    setStorage(getStorage());
+  }, []);
+
+  const handleSectionChange = useCallback((section) => {
+    setActiveSection(section);
+  }, []);
+
+  const refreshStorage = useCallback(() => {
+    setStorage(getStorage());
+  }, []);
+
+  return {
+    storage,
+    showOnboarding,
+    showSettings,
+    setShowSettings,
+    activeSection,
+    handleSectionChange,
+    handleOnboardingComplete,
+    handleSettingsSave,
+    mobileMenuOpen,
+    setMobileMenuOpen,
+    refreshStorage,
+  };
+}
+
+export default function App() {
+  const {
+    storage,
+    showOnboarding,
+    showSettings,
+    setShowSettings,
+    activeSection,
+    handleSectionChange,
+    handleOnboardingComplete,
+    handleSettingsSave,
+    mobileMenuOpen,
+    setMobileMenuOpen,
+  } = useAppState();
+
+  const ActiveSection = SECTION_COMPONENTS[activeSection] || Brainstorm;
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Mobile hamburger button */}
+      <MobileMenuButton onClick={() => setMobileMenuOpen(true)} />
+
+      {/* Sidebar */}
+      <Sidebar
+        activeSection={activeSection}
+        onSectionChange={handleSectionChange}
+        sectionProgress={storage.sectionProgress}
+        onSettingsOpen={() => setShowSettings(true)}
+        userName={storage.user.name}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto relative">
+        {/* Mobile top padding for hamburger button */}
+        <div className="md:hidden h-16" />
+        <ActiveSection
+          userData={storage.user}
+          storage={storage}
+        />
+      </main>
+
+      {/* Modals */}
+      {showOnboarding && (
+        <OnboardingModal onComplete={handleOnboardingComplete} />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          onSave={handleSettingsSave}
+        />
+      )}
+    </div>
+  );
+}
