@@ -431,7 +431,7 @@ function AIGrantModal({ onClose, onGrants, existingNames, brandIdea }) {
 
 function GrantsSection({ grants, onOpenModal }) {
   return (
-    <section className="mt-12 pt-10 border-t border-border/50">
+    <div className="mt-2">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
           <h2 className="font-display text-xl text-text-primary">
@@ -532,7 +532,280 @@ function GrantsSection({ grants, onOpenModal }) {
         </span>{' '}
         \u00b7 Always verify eligibility directly with the program provider
       </p>
-    </section>
+    </div>
+  );
+}
+
+
+// \u2500\u2500\u2500 Equity Fundraising Data \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+const ROUNDS_DATA = [
+  { name: 'Pre-Seed', amount: '$50K\u2013$500K', stage: 'Idea, MVP, just you', investors: 'Angels, friends & family' },
+  { name: 'Seed', amount: '$500K\u2013$3M', stage: 'Product exists, early users', investors: 'Seed funds, angels, small VCs' },
+  { name: 'Series A', amount: '$3M\u2013$15M', stage: 'Product-market fit, scaling', investors: 'Institutional VCs' },
+  { name: 'Series B/C/D', amount: '$15M\u2013$100M+', stage: 'Aggressive growth', investors: 'Large VCs, growth equity' },
+];
+
+const RISK_REWARD_STAGES = [
+  { label: 'Pre-Seed', risk: 95, reward: 90, rewardLabel: '100x', riskLabel: '95%', description: "9 out of 10 companies fail here. But if yours doesn't, early investors can see 100x returns." },
+  { label: 'Seed', risk: 70, reward: 70, rewardLabel: '20\u201350x', riskLabel: '70%', description: 'Still high risk, but the idea is proven. Returns are still massive.' },
+  { label: 'Series A', risk: 40, reward: 50, rewardLabel: '10\u201320x', riskLabel: '40%', description: 'Product-market fit exists. Risk drops significantly.' },
+  { label: 'Series B+', risk: 20, reward: 30, rewardLabel: '3\u201310x', riskLabel: '20%', description: 'Company is growing. Lower risk, lower upside.' },
+  { label: 'IPO/Exit', risk: 5, reward: 15, rewardLabel: '2\u20135x', riskLabel: '5%', description: 'Mature company. Steady returns, minimal risk.' },
+];
+
+// \u2500\u2500\u2500 Risk/Reward Diagram \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function RiskRewardDiagram() {
+  const [selected, setSelected] = useState(0);
+  const stage = RISK_REWARD_STAGES[selected];
+
+  return (
+    <div className="space-y-5">
+      <div className="relative">
+        <div className="absolute top-4 left-6 right-6 h-0.5 bg-border" />
+        <div
+          className="absolute top-4 left-6 h-0.5 bg-accent transition-all duration-300"
+          style={{ width: `calc(${(selected / (RISK_REWARD_STAGES.length - 1)) * 100}% - 0px)` }}
+        />
+        <div className="flex justify-between relative">
+          {RISK_REWARD_STAGES.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => setSelected(i)}
+              className="flex flex-col items-center gap-2 group w-16"
+            >
+              <div
+                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                  i === selected
+                    ? 'bg-accent border-accent text-white scale-110 shadow-md'
+                    : i < selected
+                    ? 'bg-accent border-accent text-white'
+                    : 'bg-card border-border text-text-secondary group-hover:border-accent/60'
+                }`}
+              >
+                <span className="text-xs font-bold">{i + 1}</span>
+              </div>
+              <span
+                className={`text-xs font-medium text-center leading-tight transition-colors ${
+                  i === selected ? 'text-accent' : 'text-text-secondary'
+                }`}
+              >
+                {s.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-5 transition-all duration-200">
+        <div className="mb-4">
+          <h4 className="font-display text-lg font-bold text-text-primary">{stage.label}</h4>
+          <p className="text-sm text-text-secondary mt-1 leading-relaxed">{stage.description}</p>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="font-medium" style={{ color: '#f97316' }}>Failure Risk</span>
+              <span className="font-bold" style={{ color: '#f97316' }}>{stage.riskLabel}</span>
+            </div>
+            <div className="h-3 bg-border/60 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${stage.risk}%`, background: 'linear-gradient(90deg, #fb923c, #ef4444)' }}
+              />
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="font-medium text-accent">Potential Return</span>
+              <span className="font-bold text-accent">{stage.rewardLabel}</span>
+            </div>
+            <div className="h-3 bg-border/60 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${stage.reward}%`, background: 'linear-gradient(90deg, #22c55e, #16a34a)' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-5 gap-1.5">
+        {RISK_REWARD_STAGES.map((s, i) => (
+          <button
+            key={i}
+            onClick={() => setSelected(i)}
+            className={`p-2.5 rounded-lg border text-center transition-all ${
+              i === selected ? 'border-accent bg-accent/10' : 'border-border bg-background hover:border-accent/40'
+            }`}
+          >
+            <p className="text-xs font-bold" style={{ color: '#f97316' }}>{s.riskLabel}</p>
+            <p className="text-xs text-text-secondary my-0.5">fail</p>
+            <p className="text-xs font-bold text-accent">{s.rewardLabel}</p>
+            <p className="text-xs text-text-secondary">return</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// \u2500\u2500\u2500 Equity Fundraising Section \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function EquityFundraisingSection() {
+  const [roundSelected, setRoundSelected] = useState(null);
+
+  return (
+    <div className="p-5 sm:p-6 space-y-8">
+      {/* 1a */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-2">What is Equity Fundraising?</h3>
+        <p className="text-text-secondary text-sm leading-relaxed">
+          You give away a percentage of your company in exchange for money to grow it. The investor
+          bets that your company will be worth a lot more later \u2014 and their slice becomes valuable.
+        </p>
+      </div>
+
+      {/* 1b — SAFEs */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-3">The Structure \u2014 SAFEs</h3>
+        <p className="text-text-secondary text-sm leading-relaxed mb-4">
+          A <span className="font-semibold text-text-primary">SAFE</span> (Simple Agreement for Future Equity) is the
+          standard way early startups raise money. It's <span className="font-semibold text-text-primary">NOT a loan</span> \u2014 no
+          interest, no monthly payments. You're selling a promise of future shares. Your company doesn't have a
+          price tag yet, so you set a <span className="font-semibold text-accent">Valuation Cap</span> \u2014 the max
+          price the investor's money converts at.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="bg-card border border-border rounded-xl p-4">
+            <div className="text-xl mb-2">\ud83e\udd1d</div>
+            <p className="font-display text-sm font-bold text-text-primary mb-2">The Deal</p>
+            <ul className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
+              <li>You raise <span className="font-semibold text-text-primary">$100K</span></li>
+              <li>Valuation cap: <span className="font-semibold text-accent">$1M</span></li>
+              <li>The investor gets a promise of future shares</li>
+            </ul>
+          </div>
+          <div className="bg-card border border-accent/30 rounded-xl p-4">
+            <div className="text-xl mb-2">\ud83d\udcc8</div>
+            <p className="font-display text-sm font-bold text-text-primary mb-2">Later \u2014 Series A</p>
+            <ul className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
+              <li>Your company is now valued at <span className="font-semibold text-text-primary">$5M</span></li>
+              <li>$100K converts at the <span className="font-semibold text-accent">$1M cap</span> (not $5M)</li>
+              <li>They get: $100K \u00f7 $1M = <span className="font-bold text-accent">10%</span> of the company</li>
+            </ul>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <div className="text-xl mb-2">\ud83d\udca1</div>
+            <p className="font-display text-sm font-bold text-text-primary mb-2">Why the Cap Matters</p>
+            <ul className="space-y-1.5 text-xs text-text-secondary leading-relaxed">
+              <li>Without cap: $100K \u00f7 $5M = <span className="font-semibold text-text-primary">only 2%</span></li>
+              <li>The cap rewards early investors for taking the biggest risk</li>
+              <li>If worth less than the cap, they convert at the lower price</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* 1c — Rounds */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-3">The Rounds</h3>
+        <div className="space-y-2">
+          {ROUNDS_DATA.map((round, i) => (
+            <button
+              key={i}
+              onClick={() => setRoundSelected(roundSelected === i ? null : i)}
+              className={`w-full text-left rounded-xl border p-4 transition-all ${
+                roundSelected === i ? 'bg-accent/10 border-accent/40' : 'bg-card border-border hover:border-accent/30'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                    roundSelected === i ? 'bg-accent text-white' : 'bg-background text-text-secondary border border-border'
+                  }`}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-text-primary text-sm">{round.name}</span>
+                    <span className="ml-2 text-sm font-bold text-accent">{round.amount}</span>
+                  </div>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`text-text-secondary flex-shrink-0 transition-transform duration-200 ${roundSelected === i ? 'rotate-180' : ''}`}
+                />
+              </div>
+              {roundSelected === i && (
+                <div className="mt-3 pt-3 border-t border-accent/20 grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-0.5">Stage</p>
+                    <p className="text-xs text-text-primary">{round.stage}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-secondary font-medium uppercase tracking-wide mb-0.5">Who Invests</p>
+                    <p className="text-xs text-text-primary">{round.investors}</p>
+                  </div>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-text-secondary mt-3 italic px-1">
+          Each round, the valuation and amount raised go up \u2014 but the percentage you give away stays similar (15\u201325%).
+        </p>
+      </div>
+
+      {/* 1d — Risk/Reward */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-1">Risk vs. Reward Over Time</h3>
+        <p className="text-text-secondary text-xs mb-4 leading-relaxed">
+          Click each stage to see risk and return potential. Both decrease as the company matures.
+        </p>
+        <RiskRewardDiagram />
+      </div>
+
+      {/* 1e — Outcomes */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-3">How It Ends</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { emoji: '\ud83d\ude80', title: 'IPO', body: 'Company goes public. Shares become tradeable stock. Rare, but the dream.', border: 'border-accent/30' },
+            { emoji: '\ud83d\udcb0', title: 'Acquisition', body: "Another company buys yours. Investors get paid based on their %. Most common good outcome.", border: 'border-success/30' },
+            { emoji: '\ud83d\udcc9', title: 'Failure', body: "Company runs out of money. Investors lose their investment. You lose time, not money (no debt). Most common outcome.", border: 'border-red-400/30' },
+            { emoji: '\ud83d\udd04', title: 'Zombie', body: "Company survives but doesn't grow. Investors are stuck. You have a job you made for yourself.", border: 'border-border' },
+          ].map((outcome) => (
+            <div key={outcome.title} className={`bg-card border ${outcome.border} rounded-xl p-4`}>
+              <div className="text-2xl mb-2">{outcome.emoji}</div>
+              <p className="font-display text-sm font-bold text-text-primary mb-1">{outcome.title}</p>
+              <p className="text-xs text-text-secondary leading-relaxed">{outcome.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 1f — Finding Investors */}
+      <div>
+        <h3 className="font-display text-lg font-bold text-text-primary mb-3">How to Find Investors</h3>
+        <div className="space-y-2">
+          {[
+            { emoji: '\ud83d\udc65', title: 'Personal Network', body: 'Friends, family, former colleagues who believe in YOU. Often your first check.' },
+            { emoji: '\ud83e\udd1d', title: 'Warm Intros', body: 'Someone you know introduces you to an investor. Cold emails almost never work.' },
+            { emoji: '\ud83d\udd04', title: 'Your Existing Investors', body: 'Once you have one, they introduce you to others. Snowball effect.' },
+            { emoji: '\ud83d\udc8e', title: 'High Net Worth Individuals', body: 'People passionate about beverages or your mission. Industry events, LinkedIn, AngelList.' },
+          ].map((source) => (
+            <div key={source.title} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">
+              <span className="text-xl flex-shrink-0">{source.emoji}</span>
+              <div>
+                <p className="font-semibold text-text-primary text-sm">{source.title}</p>
+                <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{source.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -930,6 +1203,8 @@ export function Financing({ setActiveSection }) {
   );
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
+  const [equityOpen, setEquityOpen] = useState(false);
+  const [grantsOpen, setGrantsOpen] = useState(true);
 
   const brandIdea = getStorage().brainstorm?.currentIdea || '';
 
@@ -979,8 +1254,64 @@ export function Financing({ setActiveSection }) {
       {/* Cost Breakdown \u2014 main content */}
       <CostBreakdownSection />
 
-      {/* Grants \u2014 secondary section below */}
-      <GrantsSection grants={allGrants} onOpenModal={() => setShowModal(true)} />
+      {/* How to Fund Your Brand */}
+      <div className="mt-12 pt-10 border-t border-border/50">
+        <div className="mb-5">
+          <h2 className="font-display text-2xl text-text-primary">How to Fund Your Brand</h2>
+          <p className="text-text-secondary text-sm mt-1">
+            Now that you know what it costs, here's how to pay for it.
+          </p>
+        </div>
+
+        {/* Equity Fundraising Accordion */}
+        <div className="bg-card border border-border rounded-xl mb-3 overflow-hidden">
+          <button
+            onClick={() => setEquityOpen((v) => !v)}
+            className="w-full text-left p-4 flex justify-between items-center cursor-pointer hover:bg-background/50 transition-colors"
+          >
+            <span className="font-display text-lg text-text-primary">
+              \ud83d\udcb0 Equity Fundraising \u2014 Investors &amp; Rounds
+            </span>
+            <ChevronDown
+              size={20}
+              className={`text-text-secondary transition-transform duration-200 ${equityOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {equityOpen && (
+            <div className="border-t border-border">
+              <EquityFundraisingSection />
+            </div>
+          )}
+        </div>
+
+        {/* Grants Accordion — open by default */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <button
+            onClick={() => setGrantsOpen((v) => !v)}
+            className="w-full text-left p-4 flex justify-between items-center cursor-pointer hover:bg-background/50 transition-colors"
+          >
+            <span className="font-display text-lg text-text-primary">
+              \ud83c\udf81 Grants &amp; Non-Dilutive Funding
+            </span>
+            <ChevronDown
+              size={20}
+              className={`text-text-secondary transition-transform duration-200 ${grantsOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {grantsOpen && (
+            <div className="border-t border-border px-5 sm:px-6 pb-5">
+              <div className="bg-success/10 border border-success/20 rounded-xl p-4 my-5">
+                <p className="text-sm text-text-primary leading-relaxed">
+                  <span className="font-semibold">Non-dilutive funding</span> \u2014 you keep 100% of your
+                  company. Grants are typically $5K\u2013$100K. Less than equity rounds, but enough to
+                  cover your first production run, branding, or market research. And you never pay it back.
+                </p>
+              </div>
+              <GrantsSection grants={allGrants} onOpenModal={() => setShowModal(true)} />
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* AI Grant Finder Modal */}
       {showModal && (
